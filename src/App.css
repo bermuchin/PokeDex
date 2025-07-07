@@ -1,0 +1,662 @@
+/* 포켓몬 도감 스타일 */
+
+body, #root {
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* 세대별 배경 이미지 */
+.generation-all {
+  background: url('/assets/backgrounds/national.jpg') center/cover no-repeat fixed;
+}
+
+.generation-1 {
+  background: url('/assets/backgrounds/kanto.jpg') center/cover no-repeat fixed;
+}
+
+.generation-2 {
+  background: url('/assets/backgrounds/johto.jpg') center/cover no-repeat fixed;
+}
+
+.generation-3 {
+  background: url('/assets/backgrounds/hoenn.jpg') center/cover no-repeat fixed;
+}
+
+.generation-4 {
+  background: url('/assets/backgrounds/sinnoh.jpg') center/cover no-repeat fixed;
+}
+
+.generation-5 {
+  background: url('/assets/backgrounds/unova.jpg') center/cover no-repeat fixed;
+}
+
+.generation-6 {
+  background: url('/assets/backgrounds/kalos.jpg') center/cover no-repeat fixed;
+}
+
+.generation-7 {
+  background: url('/assets/backgrounds/alola.jpg') center/cover no-repeat fixed;
+}
+
+.generation-8 {
+  background: url('/assets/backgrounds/galar.jpg') center/cover no-repeat fixed;
+}
+
+.generation-9 {
+  background: url('/assets/backgrounds/paldea.jpg') center/cover no-repeat fixed;
+}
+
+.app {
+  min-height: 100vh;
+  width: 100vw;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+h1 {
+  text-align: center;
+  color: white;
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.45);
+  padding: 12px 24px;
+  border-radius: 18px;
+  display: inline-block;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.loading, .error {
+  text-align: center;
+  color: white;
+  font-size: 1.2rem;
+  margin-top: 50px;
+}
+
+.error {
+  color: #ff6b6b;
+}
+
+/* 검색 기능 스타일 */
+.search-container {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  outline: none;
+  transition: box-shadow 0.3s ease;
+  margin-bottom: 15px;
+}
+
+.search-input:focus {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.filter-container {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.type-filter {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  background: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  outline: none;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease;
+}
+
+.type-filter:focus {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.reset-button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  background: #ff6b6b;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.reset-button:hover {
+  background: #ff5252;
+}
+
+/* 타입 선택 버튼 스타일 */
+.type-selector {
+  margin-bottom: 15px;
+}
+
+.type-selector label {
+  display: block;
+  color: white;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.type-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.type-button {
+  padding: 8px 12px;
+  border: 2px solid transparent;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  text-transform: uppercase;
+}
+
+.type-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.type-button.selected {
+  border-color: white;
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 타입별 색상 적용 */
+.type-button.normal { background-color: rgba(168, 168, 120, 0.8); }
+.type-button.fire { background-color: rgba(240, 128, 48, 0.8); }
+.type-button.water { background-color: rgba(104, 144, 240, 0.8); }
+.type-button.electric { background-color: rgba(248, 208, 48, 0.8); }
+.type-button.grass { background-color: rgba(120, 200, 80, 0.8); }
+.type-button.ice { background-color: rgba(152, 216, 216, 0.8); }
+.type-button.fighting { background-color: rgba(192, 48, 40, 0.8); }
+.type-button.poison { background-color: rgba(160, 64, 160, 0.8); }
+.type-button.ground { background-color: rgba(224, 192, 104, 0.8); }
+.type-button.flying { background-color: rgba(168, 144, 240, 0.8); }
+.type-button.psychic { background-color: rgba(248, 88, 136, 0.8); }
+.type-button.bug { background-color: rgba(168, 184, 32, 0.8); }
+.type-button.rock { background-color: rgba(184, 160, 56, 0.8); }
+.type-button.ghost { background-color: rgba(112, 88, 152, 0.8); }
+.type-button.dragon { background-color: rgba(112, 56, 248, 0.8); }
+.type-button.dark { background-color: rgba(112, 88, 72, 0.8); }
+.type-button.steel { background-color: rgba(184, 184, 208, 0.8); }
+.type-button.fairy { background-color: rgba(238, 153, 172, 0.8); }
+
+.type-button.selected.normal { background-color: #A8A878; }
+.type-button.selected.fire { background-color: #F08030; }
+.type-button.selected.water { background-color: #6890F0; }
+.type-button.selected.electric { background-color: #F8D030; }
+.type-button.selected.grass { background-color: #78C850; }
+.type-button.selected.ice { background-color: #98D8D8; }
+.type-button.selected.fighting { background-color: #C03028; }
+.type-button.selected.poison { background-color: #A040A0; }
+.type-button.selected.ground { background-color: #E0C068; }
+.type-button.selected.flying { background-color: #A890F0; }
+.type-button.selected.psychic { background-color: #F85888; }
+.type-button.selected.bug { background-color: #A8B820; }
+.type-button.selected.rock { background-color: #B8A038; }
+.type-button.selected.ghost { background-color: #705898; }
+.type-button.selected.dragon { background-color: #7038F8; }
+.type-button.selected.dark { background-color: #705848; }
+.type-button.selected.steel { background-color: #B8B8D0; }
+.type-button.selected.fairy { background-color: #EE99AC; }
+
+.selected-types {
+  margin-left: 10px;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* 특성 스타일 */
+.abilities {
+  margin-bottom: 20px;
+}
+
+.ability {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ability.normal {
+  background: rgba(120, 200, 80, 0.3);
+  border-color: rgba(120, 200, 80, 0.6);
+}
+
+.ability.hidden {
+  background: rgba(112, 56, 248, 0.3);
+  border-color: rgba(112, 56, 248, 0.6);
+}
+
+.ability-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.ability-name {
+  font-weight: bold;
+  color: #000;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.ability-description {
+  color: #000;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+  font-weight: 500;
+  text-shadow: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.hidden-badge {
+  background: rgba(112, 56, 248, 0.8);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.search-results {
+  margin-top: 10px;
+  color: white;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.no-results {
+  text-align: center;
+  color: white;
+  font-size: 1.1rem;
+  margin-top: 50px;
+  opacity: 0.8;
+}
+
+.pokemon-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+  box-sizing: border-box;
+}
+
+.pokemon-card {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.pokemon-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+}
+
+.pokemon-card img {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 15px;
+}
+
+.pokemon-card h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.3rem;
+  text-transform: capitalize;
+}
+
+.types {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.type {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: white;
+}
+
+/* 포켓몬 타입별 색상 */
+.normal { background-color: #A8A878; }
+.fire { background-color: #F08030; }
+.water { background-color: #6890F0; }
+.electric { background-color: #F8D030; }
+.grass { background-color: #78C850; }
+.ice { background-color: #98D8D8; }
+.fighting { background-color: #C03028; }
+.poison { background-color: #A040A0; }
+.ground { background-color: #E0C068; }
+.flying { background-color: #A890F0; }
+.psychic { background-color: #F85888; }
+.bug { background-color: #A8B820; }
+.rock { background-color: #B8A038; }
+.ghost { background-color: #705898; }
+.dragon { background-color: #7038F8; }
+.dark { background-color: #705848; }
+.steel { background-color: #B8B8D0; }
+.fairy { background-color: #EE99AC; }
+
+/* 모달 스타일 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+.pokemon-detail-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 20px;
+}
+
+.pokemon-detail-header img {
+  width: 120px;
+  height: 120px;
+}
+
+.pokemon-detail-info h2 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1.8rem;
+}
+
+.pokemon-number {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0 0 15px 0;
+}
+
+.pokemon-detail-stats {
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.pokemon-detail-stats h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 15px;
+}
+
+.stat-label {
+  min-width: 80px;
+  font-weight: bold;
+  color: #333;
+}
+
+.stat-value {
+  min-width: 40px;
+  text-align: right;
+  color: #666;
+}
+
+.stat-bar {
+  flex: 1;
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* 타입별 능력치 바 색상 */
+.stat-bar-fill.normal { background: linear-gradient(90deg, #A8A878, #C6C6A7); }
+.stat-bar-fill.fire { background: linear-gradient(90deg, #F08030, #F5AC78); }
+.stat-bar-fill.water { background: linear-gradient(90deg, #6890F0, #9DB7F5); }
+.stat-bar-fill.electric { background: linear-gradient(90deg, #F8D030, #F4E88C); }
+.stat-bar-fill.grass { background: linear-gradient(90deg, #78C850, #A7DB8D); }
+.stat-bar-fill.ice { background: linear-gradient(90deg, #98D8D8, #BCE6E6); }
+.stat-bar-fill.fighting { background: linear-gradient(90deg, #C03028, #D67873); }
+.stat-bar-fill.poison { background: linear-gradient(90deg, #A040A0, #C183C1); }
+.stat-bar-fill.ground { background: linear-gradient(90deg, #E0C068, #EBD69D); }
+.stat-bar-fill.flying { background: linear-gradient(90deg, #A890F0, #C6BCF7); }
+.stat-bar-fill.psychic { background: linear-gradient(90deg, #F85888, #FA92B2); }
+.stat-bar-fill.bug { background: linear-gradient(90deg, #A8B820, #C6D16E); }
+.stat-bar-fill.rock { background: linear-gradient(90deg, #B8A038, #D1C17D); }
+.stat-bar-fill.ghost { background: linear-gradient(90deg, #705898, #A292BC); }
+.stat-bar-fill.dragon { background: linear-gradient(90deg, #7038F8, #A27DFA); }
+.stat-bar-fill.dark { background: linear-gradient(90deg, #705848, #A29288); }
+.stat-bar-fill.steel { background: linear-gradient(90deg, #B8B8D0, #D1D1E0); }
+.stat-bar-fill.fairy { background: linear-gradient(90deg, #EE99AC, #F4BDC9); }
+
+/* 기본 색상 (타입이 없는 경우) */
+.stat-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.load-more-container {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.load-more-button {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.load-more-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.load-more-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .pokemon-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+  
+  .pokemon-card {
+    padding: 15px;
+  }
+  
+  .pokemon-card img {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .search-input {
+    max-width: 100%;
+    padding: 12px 15px;
+  }
+  
+  .modal-content {
+    padding: 20px;
+    margin: 10px;
+  }
+  
+  .pokemon-detail-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .pokemon-detail-header img {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+.generation-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+.generation-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 20px;
+  background: #fff;
+  color: #5a4fcf;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.generation-btn.selected, .generation-btn:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(102,126,234,0.15);
+}
+
+.generation-buttons.vertical {
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  margin-top: 60px;
+}
+
+.generation-select-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.generation-btn {
+  min-width: 200px;
+  font-size: 1.1rem;
+  padding: 16px 0;
+  margin: 0;
+}
+
+.back-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 16px;
+  font-size: 1rem;
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  cursor: pointer;
+  margin-bottom: 18px;
+  margin-top: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  transition: background 0.2s, color 0.2s;
+}
+
+.back-btn:hover {
+  background: rgba(0,0,0,0.65);
+  color: #ffd700;
+}
+
+.generation-select {
+  background: url('/assets/backgrounds/generation-select.jpg') center/cover no-repeat fixed;
+}
