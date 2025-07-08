@@ -1077,8 +1077,10 @@ h1 {
     color: #bbb;
   }
   .pokemon-detail-container {
-    padding: 12px 10px;
-    margin: 0;
+    padding: 12px 4px;
+    margin: 0 auto;
+    max-width: 480px;
+    width: 100%;
   }
   .pokemon-detail-page .ability {
     padding: 12px;
@@ -1246,7 +1248,15 @@ h1 {
   padding: 10px 18px;
   border-radius: 16px;
   margin: 16px auto 0 auto;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #fff;
   font-weight: 400;
+  min-height: 48px;
+  min-width: 180px;
+}
+
+.type-selector-label-container label {
+  color: #fff;
 }

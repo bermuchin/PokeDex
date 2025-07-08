@@ -263,7 +263,7 @@ function PokemonDetail() {
                         <div className="matchup-info">
                           <span className={`matchup-type type-${matchup.defendingType}`}>{matchup.koreanDefendingType}</span>
                           {pokemon.types.length > 1 && (
-                            <span className="attacking-type">- {matchup.koreanAttackingType} 타입으로 공격 시</span>
+                            <span className="attacking-type">{matchup.koreanAttackingType} 타입으로 공격:</span>
                           )}
                         </div>
                         <span className="matchup-effectiveness">×{matchup.effectiveness}</span>
