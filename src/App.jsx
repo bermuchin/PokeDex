@@ -247,7 +247,7 @@ function PokemonDetail() {
                   </div>
                 ))}
                 <div className="stat-row stat-total-row">
-                  <span className="stat-label">총합:</span>
+                  <span className="stat-label">종족값:</span>
                   <span className={`stat-value stat-total-value ${pokemon.types[0]}`}>{pokemon.stats.reduce((sum, stat) => sum + stat.value, 0)}</span>
                 </div>
               </div>

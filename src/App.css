@@ -1168,24 +1168,24 @@ h1 {
     font-size: 1.15em;
     margin-left: 8px;
   }
-  .stat-total-value.normal { color: #A8A878; }
-  .stat-total-value.fire { color: #F08030; }
-  .stat-total-value.water { color: #6890F0; }
-  .stat-total-value.electric { color: #F8D030; }
-  .stat-total-value.grass { color: #78C850; }
-  .stat-total-value.ice { color: #98D8D8; }
-  .stat-total-value.fighting { color: #C03028; }
-  .stat-total-value.poison { color: #A040A0; }
-  .stat-total-value.ground { color: #E0C068; }
-  .stat-total-value.flying { color: #A890F0; }
-  .stat-total-value.psychic { color: #F85888; }
-  .stat-total-value.bug { color: #A8B820; }
-  .stat-total-value.rock { color: #B8A038; }
-  .stat-total-value.ghost { color: #705898; }
-  .stat-total-value.dragon { color: #7038F8; }
-  .stat-total-value.dark { color: #705848; }
-  .stat-total-value.steel { color: #B8B8D0; }
-  .stat-total-value.fairy { color: #EE99AC; }
+  .stat-total-value.normal { color: #A8A878 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.fire { color: #F08030 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.water { color: #6890F0 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.electric { color: #F8D030 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.grass { color: #78C850 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.ice { color: #98D8D8 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.fighting { color: #C03028 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.poison { color: #A040A0 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.ground { color: #E0C068 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.flying { color: #A890F0 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.psychic { color: #F85888 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.bug { color: #A8B820 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.rock { color: #B8A038 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.ghost { color: #705898 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.dragon { color: #7038F8 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.dark { color: #705848 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.steel { color: #B8B8D0 !important; background: none !important; box-shadow: none !important; border: none !important; }
+  .stat-total-value.fairy { color: #EE99AC !important; background: none !important; box-shadow: none !important; border: none !important; }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
@@ -1202,5 +1202,11 @@ h1 {
   .pokemon-detail-header img {
     width: 220px;
     height: 220px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app {
+    background-size: auto 100vh !important;
   }
 }
