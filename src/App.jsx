@@ -339,7 +339,11 @@ function PokemonList() {
       const response = await fetch(`${apiUrl}/api/pokemons?generation=${selectedGeneration}&limit=${LIMIT}&offset=${offset}`);
       if (!response.ok) throw new Error('Failed to fetch pokemons');
       const data = await response.json();
-      setPokemons(prev => [...prev, ...data.pokemons]);
+      setPokemons(prev => {
+        const all = [...prev, ...data.pokemons];
+        const unique = Array.from(new Map(all.map(p => [p.id, p])).values());
+        return unique;
+      });
       setHasMore(data.pokemons.length === LIMIT);
       setOffset(prev => prev + LIMIT);
       setLoading(false);

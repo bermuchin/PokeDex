@@ -180,9 +180,11 @@ h1 {
   justify-content: center;
 }
 .type-button {
+  padding: 4px 8px;
+  font-size: 0.75rem;
   flex: 1 1 0;
-  min-width: 70px;
-  max-width: 120px;
+  min-width: 60px;
+  max-width: 100px;
   box-sizing: border-box;
 }
 
@@ -841,8 +843,8 @@ h1 {
 
 .generation-btn {
   min-width: 200px;
-  font-size: 1.1rem;
-  padding: 16px 0;
+  font-size: 0.95rem;
+  padding: 8px 0;
   margin: 0;
 }
 
@@ -905,6 +907,10 @@ h1 {
     margin-right: auto;
     display: block;
     text-align: center;
+  }
+  .search-input::placeholder {
+    font-size: 0.85em;
+    color: #bbb;
   }
   .pokemon-detail-header {
     flex-direction: column;
@@ -1064,6 +1070,10 @@ h1 {
     margin-right: auto;
     display: block;
     text-align: center;
+  }
+  .search-input::placeholder {
+    font-size: 0.85em;
+    color: #bbb;
   }
   .pokemon-detail-container {
     padding: 12px 10px;
