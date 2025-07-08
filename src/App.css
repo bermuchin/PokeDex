@@ -1290,14 +1290,20 @@ h1 {
 }
 
 @media (max-width: 768px) {
+  .type-buttons-row {
+    gap: 10px;
+  }
   .type-button {
-    padding: 3.3px 7.7px;
-    font-size: 0.77rem;
+    padding: 3.6px 8.4px;
+    font-size: 0.84rem;
   }
 }
 @media (max-width: 480px) {
+  .type-buttons-row {
+    gap: 10px;
+  }
   .type-button {
-    padding: 2.2px 5.5px;
-    font-size: 0.66rem;
+    padding: 2.4px 6px;
+    font-size: 0.72rem;
   }
 }
