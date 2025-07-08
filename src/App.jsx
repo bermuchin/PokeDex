@@ -261,7 +261,7 @@ function PokemonDetail() {
                     {getOffensiveMatchups().map((matchup, index) => (
                       <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'offensive' : matchup.effectiveness < 1 && matchup.effectiveness > 0 ? 'weak' : matchup.effectiveness === 0 ? 'immune' : 'normal'}`}>
                         <div className="matchup-info">
-                          <span className="matchup-type">{matchup.koreanDefendingType}</span>
+                          <span className={`matchup-type type-${matchup.defendingType}`}>{matchup.koreanDefendingType}</span>
                           {pokemon.types.length > 1 && (
                             <span className="attacking-type">- {matchup.koreanAttackingType} 타입으로 공격 시</span>
                           )}
@@ -277,7 +277,7 @@ function PokemonDetail() {
                   <div className="matchups-grid">
                     {getDefensiveMatchups().map((matchup, index) => (
                       <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'weak' : matchup.effectiveness < 1 && matchup.effectiveness > 0 ? 'resistant' : matchup.effectiveness === 0 ? 'immune' : 'normal'}`}>
-                        <span className="matchup-type">{matchup.koreanAttackingType}</span>
+                        <span className={`matchup-type type-${matchup.attackingType}`}>{matchup.koreanAttackingType}</span>
                         <span className="matchup-effectiveness">×{matchup.effectiveness}</span>
                       </div>
                     ))}
@@ -302,6 +302,12 @@ function PokemonList() {
   const [selectedTypes, setSelectedTypes] = useState(['all'])
   const [selectedGeneration, setSelectedGeneration] = useState(null)
   const [showDex, setShowDex] = useState(false)
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+  const LIMIT = 50;
+  const observer = useRef();
+  const loaderRef = useRef();
 
   // URL에서 세대 정보를 읽어오기
   useEffect(() => {
@@ -313,27 +319,62 @@ function PokemonList() {
     }
   }, []);
 
-  // 세대/전국도감 선택 시 상태 초기화 및 전체 포켓몬 한 번에 fetch
+  // 세대/전국도감 선택 시 상태 초기화
   useEffect(() => {
     if (!selectedGeneration) return;
     setLoading(true);
     setPokemons([]);
+    setOffset(0);
+    setHasMore(true);
+    setIsFetching(false);
     setError(null);
-    const fetchPokemons = async () => {
-      const apiUrl = import.meta.env.VITE_API_URL;
-      try {
-        const response = await fetch(`${apiUrl}/api/pokemons?generation=${selectedGeneration}`);
-        if (!response.ok) throw new Error('Failed to fetch pokemons');
-        const data = await response.json();
-        setPokemons(data.pokemons);
-        setLoading(false);
-      } catch (err) {
-        setError('포켓몬 리스트를 불러오는데 실패했습니다.');
-        setLoading(false);
-      }
-    };
-    fetchPokemons();
   }, [selectedGeneration]);
+
+  // 포켓몬 데이터 fetch 함수
+  const fetchPokemons = useCallback(async () => {
+    if (!selectedGeneration || isFetching || !hasMore) return;
+    setIsFetching(true);
+    const apiUrl = import.meta.env.VITE_API_URL;
+    try {
+      const response = await fetch(`${apiUrl}/api/pokemons?generation=${selectedGeneration}&limit=${LIMIT}&offset=${offset}`);
+      if (!response.ok) throw new Error('Failed to fetch pokemons');
+      const data = await response.json();
+      setPokemons(prev => {
+        // id 기준 중복 제거
+        const all = [...prev, ...data.pokemons];
+        const unique = Array.from(new Map(all.map(p => [p.id, p])).values());
+        return unique;
+      });
+      setHasMore(data.pokemons.length === LIMIT);
+      setOffset(prev => prev + LIMIT);
+      setLoading(false);
+    } catch (err) {
+      setError('포켓몬 리스트를 불러오는데 실패했습니다.');
+      setLoading(false);
+    } finally {
+      setIsFetching(false);
+    }
+  }, [selectedGeneration, offset, isFetching, hasMore]);
+
+  // 최초 및 추가 fetch
+  useEffect(() => {
+    if (!selectedGeneration) return;
+    fetchPokemons();
+    // eslint-disable-next-line
+  }, [selectedGeneration]);
+
+  // 무한 스크롤 IntersectionObserver
+  useEffect(() => {
+    if (isFetching || !hasMore) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new window.IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        fetchPokemons();
+      }
+    });
+    if (loaderRef.current) observer.current.observe(loaderRef.current);
+    return () => observer.current && observer.current.disconnect();
+  }, [fetchPokemons, isFetching, hasMore]);
 
   // 검색/필터 적용
   const filteredPokemons = pokemons.filter(pokemon => {
@@ -362,6 +403,9 @@ function PokemonList() {
     setSelectedTypes(['all']);
     setShowDex(true);
     setPokemons([]);
+    setOffset(0);
+    setHasMore(true);
+    setIsFetching(false);
     setError(null);
     // URL 업데이트
     navigate(`/?generation=${id}`);
@@ -373,6 +417,9 @@ function PokemonList() {
     setSearchTerm('');
     setSelectedTypes(['all']);
     setPokemons([]);
+    setOffset(0);
+    setHasMore(true);
+    setIsFetching(false);
     setError(null);
     navigate('/');
   };
@@ -506,7 +553,10 @@ function PokemonList() {
           </div>
         ))}
       </div>
-      {filteredPokemons.length === 0 && !loading && (
+      {/* 무한 스크롤 하단 감지용 div */}
+      <div ref={loaderRef} style={{ height: 40 }} />
+      {isFetching && <div className="loading">로딩 중...</div>}
+      {filteredPokemons.length === 0 && !isFetching && (
         <div className="no-results">
           검색 결과가 없습니다.
         </div>
