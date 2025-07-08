@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom'
 import './App.css'
 
 const API_BASE_URL = 'https://pokedex-1ult.onrender.com/api';
@@ -33,16 +34,124 @@ const getRegionName = (generationId) => {
   return regionNames[generationId] || '범박사의 포켓몬 도감';
 };
 
-function App() {
-console.log('API URL:', import.meta.env.VITE_API_URL);
+// 포켓몬 상세 페이지 컴포넌트
+function PokemonDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [pokemon, setPokemon] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  useEffect(() => {
+    const fetchPokemon = async () => {
+      try {
+        setLoading(true);
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const response = await fetch(`${apiUrl}/api/pokemons/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch pokemon');
+        }
+        const data = await response.json();
+        setPokemon(data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching pokemon:', err);
+        setError('포켓몬 정보를 불러오는데 실패했습니다.');
+        setLoading(false);
+      }
+    };
+
+    fetchPokemon();
+  }, [id]);
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  if (loading) {
+    return (
+      <div className="app">
+        <button className="back-btn" onClick={handleBack}>← 뒤로 가기</button>
+        <div className="loading">로딩 중...</div>
+      </div>
+    );
+  }
+
+  if (error || !pokemon) {
+    return (
+      <div className="app">
+        <button className="back-btn" onClick={handleBack}>← 뒤로 가기</button>
+        <div className="error">{error || '포켓몬을 찾을 수 없습니다.'}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="app pokemon-detail-page">
+      <button className="back-btn" onClick={handleBack}>← 뒤로 가기</button>
+      <div className="pokemon-detail-container">
+        <div className="pokemon-detail-header">
+          <img src={pokemon.image} alt={pokemon.koreanName} />
+          <div className="pokemon-detail-info">
+            <h2>{pokemon.koreanName}</h2>
+            <p className="pokemon-number">#{pokemon.id.toString().padStart(3, '0')}</p>
+            <div className="types">
+              {pokemon.types.map((type) => (
+                <span key={type} className={`type ${type}`}>
+                  {getKoreanTypeName(type)}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="pokemon-detail-stats">
+          <div className="stat-row">
+            <span className="stat-label">키:</span>
+            <span className="stat-value">{pokemon.height}m</span>
+          </div>
+          <div className="stat-row">
+            <span className="stat-label">몸무게:</span>
+            <span className="stat-value">{pokemon.weight}kg</span>
+          </div>
+          <h3>특성</h3>
+          <div className="abilities">
+            {pokemon.abilities.map((ability, index) => (
+              <div key={index} className={`ability ${ability.isHidden ? 'hidden' : 'normal'}`}>
+                <div className="ability-header">
+                  <span className="ability-name">{getKoreanAbilityName(ability.name)}</span>
+                  {ability.isHidden && <span className="hidden-badge">숨겨진 특성</span>}
+                </div>
+                <div className="ability-description">{ability.description}</div>
+              </div>
+            ))}
+          </div>
+          <h3>기본 능력치</h3>
+          {pokemon.stats.map((stat) => (
+            <div key={stat.name} className="stat-row">
+              <span className="stat-label">{getKoreanStatName(stat.name)}:</span>
+              <span className="stat-value">{stat.value}</span>
+              <div className="stat-bar">
+                <div
+                  className={`stat-bar-fill ${pokemon.types[0]}`}
+                  style={{ width: `${(stat.value / 255) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 메인 포켓몬 목록 컴포넌트
+function PokemonList() {
+  const navigate = useNavigate();
   const [pokemons, setPokemons] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTypes, setSelectedTypes] = useState(['all'])
-  const [selectedPokemon, setSelectedPokemon] = useState(null)
-  const [showModal, setShowModal] = useState(false)
   const [selectedGeneration, setSelectedGeneration] = useState(null)
   const [showDex, setShowDex] = useState(false)
 
@@ -87,13 +196,7 @@ console.log('API URL:', import.meta.env.VITE_API_URL);
   });
 
   const handlePokemonClick = (pokemon) => {
-    setSelectedPokemon(pokemon);
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setSelectedPokemon(null);
+    navigate(`/pokemon/${pokemon.id}`);
   };
 
   const resetFilters = () => {
@@ -251,65 +354,19 @@ console.log('API URL:', import.meta.env.VITE_API_URL);
           검색 결과가 없습니다.
         </div>
       )}
-      {showModal && selectedPokemon && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={closeModal}>×</button>
-            <div className="pokemon-detail">
-              <div className="pokemon-detail-header">
-                <img src={selectedPokemon.image} alt={selectedPokemon.koreanName} />
-                <div className="pokemon-detail-info">
-                  <h2>{selectedPokemon.koreanName}</h2>
-                  <p className="pokemon-number">#{selectedPokemon.id.toString().padStart(3, '0')}</p>
-                  <div className="types">
-                    {selectedPokemon.types.map((type) => (
-                      <span key={type} className={`type ${type}`}>
-                        {getKoreanTypeName(type)}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="pokemon-detail-stats">
-                <div className="stat-row">
-                  <span className="stat-label">키:</span>
-                  <span className="stat-value">{selectedPokemon.height}m</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">몸무게:</span>
-                  <span className="stat-value">{selectedPokemon.weight}kg</span>
-                </div>
-                <h3>특성</h3>
-                <div className="abilities">
-                  {selectedPokemon.abilities.map((ability, index) => (
-                    <div key={index} className={`ability ${ability.isHidden ? 'hidden' : 'normal'}`}>
-                      <div className="ability-header">
-                        <span className="ability-name">{getKoreanAbilityName(ability.name)}</span>
-                        {ability.isHidden && <span className="hidden-badge">숨겨진 특성</span>}
-                      </div>
-                      <div className="ability-description">{ability.description}</div>
-                    </div>
-                  ))}
-                </div>
-                <h3>기본 능력치</h3>
-                {selectedPokemon.stats.map((stat) => (
-                  <div key={stat.name} className="stat-row">
-                    <span className="stat-label">{getKoreanStatName(stat.name)}:</span>
-                    <span className="stat-value">{stat.value}</span>
-                    <div className="stat-bar">
-                      <div
-                        className={`stat-bar-fill ${selectedPokemon.types[0]}`}
-                        style={{ width: `${(stat.value / 255) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
+  );
+}
+
+// 메인 App 컴포넌트
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<PokemonList />} />
+        <Route path="/pokemon/:id" element={<PokemonDetail />} />
+      </Routes>
+    </Router>
   );
 }
 
