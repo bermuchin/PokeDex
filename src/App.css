@@ -429,6 +429,7 @@ h1 {
   justify-content: center;
 }
 
+/* 데스크톱 */
 .pokemon-detail-header img {
   width: 200px;
   height: 200px;
@@ -1221,4 +1222,20 @@ h1 {
 
 .generation-select {
   background: url('/assets/backgrounds/generation-select.jpg') center/cover no-repeat fixed;
+}
+
+/* 태블릿 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .pokemon-detail-header img {
+    width: 160px;
+    height: 160px;
+  }
+}
+
+/* 모바일 */
+@media (max-width: 768px) {
+  .pokemon-detail-header img {
+    width: 120px;
+    height: 120px;
+  }
 }
