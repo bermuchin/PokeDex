@@ -309,6 +309,7 @@ function PokemonList() {
   const LIMIT = 30;
   const observer = useRef();
   const loaderRef = useRef();
+  const fetchPokemonsRef = useRef();
 
   // URL에서 세대 정보를 읽어오기
   useEffect(() => {
@@ -328,6 +329,11 @@ function PokemonList() {
     setOffset(0);
     setHasMore(true);
     setIsFetching(false);
+    // 최초 1회만 offset=0에서 fetchPokemons 호출
+    fetchPokemonsRef.current && clearTimeout(fetchPokemonsRef.current);
+    fetchPokemonsRef.current = setTimeout(() => {
+      fetchPokemons();
+    }, 0);
   }, [selectedGeneration]);
 
   // 포켓몬 데이터 fetch 함수
