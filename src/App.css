@@ -584,14 +584,14 @@ h1 {
   }
   
   .pokemon-card img {
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     bottom: 8px;
     right: 8px;
   }
   
   .pokemon-card h3 {
-    font-size: 1rem;
+    font-size: 1.1rem;
     margin-bottom: 8px;
   }
   
@@ -631,8 +631,8 @@ h1 {
   }
   
   .type {
-    padding: 3px 6px;
-    font-size: 0.6rem;
+    padding: 4px 8px;
+    font-size: 0.7rem;
   }
 }
 
@@ -670,14 +670,14 @@ h1 {
   }
   
   .pokemon-card img {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     bottom: 6px;
     right: 6px;
   }
   
   .pokemon-card h3 {
-    font-size: 0.9rem;
+    font-size: 1rem;
     margin-bottom: 6px;
   }
   
@@ -700,8 +700,8 @@ h1 {
   }
   
   .type {
-    padding: 2px 5px;
-    font-size: 0.5rem;
+    padding: 3px 6px;
+    font-size: 0.6rem;
   }
   
   .search-input {
