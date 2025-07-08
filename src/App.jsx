@@ -164,7 +164,7 @@ function PokemonDetail() {
   }
 
   return (
-    <div className="app pokemon-detail-page">
+    <div className={`app pokemon-detail-page type-${pokemon.types[0]}`}>
       <button className="back-btn" onClick={handleBack}>← 뒤로 가기</button>
       <div className="pokemon-detail-container">
         <div className="pokemon-detail-header">
