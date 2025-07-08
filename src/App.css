@@ -392,24 +392,24 @@ h1 {
 }
 
 /* 포켓몬 타입별 색상 */
-.normal { background-color: #A8A878; }
-.fire { background-color: #F08030; }
-.water { background-color: #6890F0; }
-.electric { background-color: #F8D030; }
-.grass { background-color: #78C850; }
-.ice { background-color: #98D8D8; }
-.fighting { background-color: #C03028; }
-.poison { background-color: #A040A0; }
-.ground { background-color: #E0C068; }
-.flying { background-color: #A890F0; }
-.psychic { background-color: #F85888; }
-.bug { background-color: #A8B820; }
-.rock { background-color: #B8A038; }
-.ghost { background-color: #705898; }
-.dragon { background-color: #7038F8; }
-.dark { background-color: #705848; }
-.steel { background-color: #B8B8D0; }
-.fairy { background-color: #EE99AC; }
+.normal { color: #A8A878 !important; background: none !important; }
+.fire { color: #F08030 !important; background: none !important; }
+.water { color: #6890F0 !important; background: none !important; }
+.electric { color: #F8D030 !important; background: none !important; }
+.grass { color: #78C850 !important; background: none !important; }
+.ice { color: #98D8D8 !important; background: none !important; }
+.fighting { color: #C03028 !important; background: none !important; }
+.poison { color: #A040A0 !important; background: none !important; }
+.ground { color: #E0C068 !important; background: none !important; }
+.flying { color: #A890F0 !important; background: none !important; }
+.psychic { color: #F85888 !important; background: none !important; }
+.bug { color: #A8B820 !important; background: none !important; }
+.rock { color: #B8A038 !important; background: none !important; }
+.ghost { color: #705898 !important; background: none !important; }
+.dragon { color: #7038F8 !important; background: none !important; }
+.dark { color: #705848 !important; background: none !important; }
+.steel { color: #B8B8D0 !important; background: none !important; }
+.fairy { color: #EE99AC !important; background: none !important; }
 
 /* 모달 스타일 */
 /* 포켓몬 상세 페이지 스타일 */
@@ -1151,24 +1151,6 @@ h1 {
     box-shadow: none !important;
     border: none !important;
   }
-  .stat-total-value.normal { color: #A8A878 !important; }
-  .stat-total-value.fire { color: #F08030 !important; }
-  .stat-total-value.water { color: #6890F0 !important; }
-  .stat-total-value.electric { color: #F8D030 !important; }
-  .stat-total-value.grass { color: #78C850 !important; }
-  .stat-total-value.ice { color: #98D8D8 !important; }
-  .stat-total-value.fighting { color: #C03028 !important; }
-  .stat-total-value.poison { color: #A040A0 !important; }
-  .stat-total-value.ground { color: #E0C068 !important; }
-  .stat-total-value.flying { color: #A890F0 !important; }
-  .stat-total-value.psychic { color: #F85888 !important; }
-  .stat-total-value.bug { color: #A8B820 !important; }
-  .stat-total-value.rock { color: #B8A038 !important; }
-  .stat-total-value.ghost { color: #705898 !important; }
-  .stat-total-value.dragon { color: #7038F8 !important; }
-  .stat-total-value.dark { color: #705848 !important; }
-  .stat-total-value.steel { color: #B8B8D0 !important; }
-  .stat-total-value.fairy { color: #EE99AC !important; }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
