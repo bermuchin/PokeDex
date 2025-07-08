@@ -259,9 +259,9 @@ function PokemonDetail() {
                   <h4>공격 시 상성</h4>
                   <div className="matchups-grid">
                     {getOffensiveMatchups().map((matchup, index) => (
-                      <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'offensive' : matchup.effectiveness < 1 && matchup.effectiveness > 0 ? 'resistant' : matchup.effectiveness === 0 ? 'immune' : 'normal'}`}>
+                      <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'offensive' : matchup.effectiveness < 1 && matchup.effectiveness > 0 ? 'weak' : matchup.effectiveness === 0 ? 'immune' : 'normal'}`}>
                         <div className="matchup-info">
-                          <span className="matchup-type">{matchup.koreanDefendingType}</span>
+                          <span className={`matchup-type ${matchup.defendingType}`}>{matchup.koreanDefendingType}</span>
                           {pokemon.types.length > 1 && (
                             <span className="attacking-type">- {matchup.koreanAttackingType} 타입으로 공격 시</span>
                           )}
@@ -277,7 +277,7 @@ function PokemonDetail() {
                   <div className="matchups-grid">
                     {getDefensiveMatchups().map((matchup, index) => (
                       <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'weak' : matchup.effectiveness < 1 && matchup.effectiveness > 0 ? 'resistant' : matchup.effectiveness === 0 ? 'immune' : 'normal'}`}>
-                        <span className="matchup-type">{matchup.koreanAttackingType}</span>
+                        <span className={`matchup-type ${matchup.attackingType}`}>{matchup.koreanAttackingType}</span>
                         <span className="matchup-effectiveness">×{matchup.effectiveness}</span>
                       </div>
                     ))}
