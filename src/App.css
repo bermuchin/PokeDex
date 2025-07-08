@@ -1205,24 +1205,24 @@ h1 {
 .type.fairy { background-color: #EE99AC; color: #fff; }
 
 /* 텍스트만 컬러 (종족값, 상성표 타입명 등) */
-.stat-total-value.normal, .matchup-type.normal { background: none !important; color: #A8A878 !important; }
-.stat-total-value.fire, .matchup-type.fire { background: none !important; color: #F08030 !important; }
-.stat-total-value.water, .matchup-type.water { background: none !important; color: #6890F0 !important; }
-.stat-total-value.electric, .matchup-type.electric { background: none !important; color: #F8D030 !important; }
-.stat-total-value.grass, .matchup-type.grass { background: none !important; color: #78C850 !important; }
-.stat-total-value.ice, .matchup-type.ice { background: none !important; color: #98D8D8 !important; }
-.stat-total-value.fighting, .matchup-type.fighting { background: none !important; color: #C03028 !important; }
-.stat-total-value.poison, .matchup-type.poison { background: none !important; color: #A040A0 !important; }
-.stat-total-value.ground, .matchup-type.ground { background: none !important; color: #E0C068 !important; }
-.stat-total-value.flying, .matchup-type.flying { background: none !important; color: #A890F0 !important; }
-.stat-total-value.psychic, .matchup-type.psychic { background: none !important; color: #F85888 !important; }
-.stat-total-value.bug, .matchup-type.bug { background: none !important; color: #A8B820 !important; }
-.stat-total-value.rock, .matchup-type.rock { background: none !important; color: #B8A038 !important; }
-.stat-total-value.ghost, .matchup-type.ghost { background: none !important; color: #705898 !important; }
-.stat-total-value.dragon, .matchup-type.dragon { background: none !important; color: #7038F8 !important; }
-.stat-total-value.dark, .matchup-type.dark { background: none !important; color: #705848 !important; }
-.stat-total-value.steel, .matchup-type.steel { background: none !important; color: #B8B8D0 !important; }
-.stat-total-value.fairy, .matchup-type.fairy { background: none !important; color: #EE99AC !important; }
+.stat-total-value.normal, .matchup-type.type-normal { background: none !important; color: #A8A878 !important; }
+.stat-total-value.fire, .matchup-type.type-fire { background: none !important; color: #F08030 !important; }
+.stat-total-value.water, .matchup-type.type-water { background: none !important; color: #6890F0 !important; }
+.stat-total-value.electric, .matchup-type.type-electric { background: none !important; color: #F8D030 !important; }
+.stat-total-value.grass, .matchup-type.type-grass { background: none !important; color: #78C850 !important; }
+.stat-total-value.ice, .matchup-type.type-ice { background: none !important; color: #98D8D8 !important; }
+.stat-total-value.fighting, .matchup-type.type-fighting { background: none !important; color: #C03028 !important; }
+.stat-total-value.poison, .matchup-type.type-poison { background: none !important; color: #A040A0 !important; }
+.stat-total-value.ground, .matchup-type.type-ground { background: none !important; color: #E0C068 !important; }
+.stat-total-value.flying, .matchup-type.type-flying { background: none !important; color: #A890F0 !important; }
+.stat-total-value.psychic, .matchup-type.type-psychic { background: none !important; color: #F85888 !important; }
+.stat-total-value.bug, .matchup-type.type-bug { background: none !important; color: #A8B820 !important; }
+.stat-total-value.rock, .matchup-type.type-rock { background: none !important; color: #B8A038 !important; }
+.stat-total-value.ghost, .matchup-type.type-ghost { background: none !important; color: #705898 !important; }
+.stat-total-value.dragon, .matchup-type.type-dragon { background: none !important; color: #7038F8 !important; }
+.stat-total-value.dark, .matchup-type.type-dark { background: none !important; color: #705848 !important; }
+.stat-total-value.steel, .matchup-type.type-steel { background: none !important; color: #B8B8D0 !important; }
+.stat-total-value.fairy, .matchup-type.type-fairy { background: none !important; color: #EE99AC !important; }
 
 .type-button,
 .type {
