@@ -527,16 +527,81 @@ function PokemonList() {
           className="search-input"
         />
         <div className="type-selector">
-          <div className="type-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', justifyContent: 'center' }}>
-            {typeOptions.slice(1).map(option => (
-              <button
-                key={option.value}
-                className={`type-button ${option.value}${selectedTypes.includes(option.value) ? ' selected' : ''}`}
-                onClick={() => handleTypeButtonClick(option.value)}
-              >
-                {option.label}
-              </button>
-            ))}
+          <div className="type-buttons-wrapper">
+            {/* 데스크탑: 8*2, 모바일: 4*4 */}
+            {window.innerWidth >= 769 ? (
+              <>
+                <div className="type-buttons-row">
+                  {typeOptions.slice(1, 9).map(option => (
+                    <button
+                      key={option.value}
+                      className={`type-button ${option.value}${selectedTypes.includes(option.value) ? ' selected' : ''}`}
+                      onClick={() => handleTypeButtonClick(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="type-buttons-row">
+                  {typeOptions.slice(9).map(option => (
+                    <button
+                      key={option.value}
+                      className={`type-button ${option.value}${selectedTypes.includes(option.value) ? ' selected' : ''}`}
+                      onClick={() => handleTypeButtonClick(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="type-buttons-row">
+                  {typeOptions.slice(1, 5).map(option => (
+                    <button
+                      key={option.value}
+                      className={`type-button ${option.value}${selectedTypes.includes(option.value) ? ' selected' : ''}`}
+                      onClick={() => handleTypeButtonClick(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="type-buttons-row">
+                  {typeOptions.slice(5, 9).map(option => (
+                    <button
+                      key={option.value}
+                      className={`type-button ${option.value}${selectedTypes.includes(option.value) ? ' selected' : ''}`}
+                      onClick={() => handleTypeButtonClick(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="type-buttons-row">
+                  {typeOptions.slice(9, 13).map(option => (
+                    <button
+                      key={option.value}
+                      className={`type-button ${option.value}${selectedTypes.includes(option.value) ? ' selected' : ''}`}
+                      onClick={() => handleTypeButtonClick(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="type-buttons-row">
+                  {typeOptions.slice(13, 17).map(option => (
+                    <button
+                      key={option.value}
+                      className={`type-button ${option.value}${selectedTypes.includes(option.value) ? ' selected' : ''}`}
+                      onClick={() => handleTypeButtonClick(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
         {(searchTerm || !selectedTypes.includes('all')) && (

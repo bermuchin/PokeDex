@@ -180,8 +180,8 @@ h1 {
   justify-content: center;
 }
 .type-button {
-  padding: 6px 18px;
-  font-size: 1rem;
+  padding: 4px 10px;
+  font-size: 0.8rem;
   border: none;
   border-radius: 16px;
   background: #444;
@@ -968,8 +968,8 @@ h1 {
     gap: 6px;
   }
   .type-button {
-    padding: 4px 8px;
-    font-size: 0.8rem;
+    padding: 3px 7px;
+    font-size: 0.7rem;
   }
   .types {
     gap: 4px;
@@ -1064,8 +1064,8 @@ h1 {
     gap: 4px;
   }
   .type-button {
-    padding: 3px 6px;
-    font-size: 0.7rem;
+    padding: 2px 5px;
+    font-size: 0.6rem;
   }
   .types {
     gap: 3px;
@@ -1286,5 +1286,18 @@ h1 {
   }
   .search-input {
     font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .type-button {
+    padding: 3.3px 7.7px;
+    font-size: 0.77rem;
+  }
+}
+@media (max-width: 480px) {
+  .type-button {
+    padding: 2.2px 5.5px;
+    font-size: 0.66rem;
   }
 }
