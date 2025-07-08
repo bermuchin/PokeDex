@@ -57,7 +57,7 @@ body, #root {
   padding: 10px;
   box-sizing: border-box;
   overflow-x: hidden;
-  background-size: cover;
+  background-size: auto 100vh !important;
   transition: background-size 0.5s cubic-bezier(.4,0,.2,1);
 }
 
@@ -1167,6 +1167,10 @@ h1 {
   .stat-total-value {
     font-size: 1.15em;
     margin-left: 8px;
+    background: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    color: inherit !important;
   }
   .stat-total-value.normal { color: #A8A878 !important; background: none !important; box-shadow: none !important; border: none !important; }
   .stat-total-value.fire { color: #F08030 !important; background: none !important; box-shadow: none !important; border: none !important; }
