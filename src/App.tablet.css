@@ -1,0 +1,16 @@
+@media (min-width: 769px) and (max-width: 1024px) {
+  .pokemon-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .pokemon-card {
+    height: 180px;
+  }
+  .pokemon-card img {
+    width: 120px;
+    height: 120px;
+  }
+  .pokemon-detail-header img {
+    width: 220px;
+    height: 220px;
+  }
+} 
