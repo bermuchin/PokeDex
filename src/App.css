@@ -205,24 +205,24 @@ h1 {
 }
 
 /* 타입별 색상 적용 */
-.type-button.normal { background-color: rgba(168, 168, 120, 0.8); }
-.type-button.fire { background-color: rgba(240, 128, 48, 0.8); }
-.type-button.water { background-color: rgba(104, 144, 240, 0.8); }
-.type-button.electric { background-color: rgba(248, 208, 48, 0.8); }
-.type-button.grass { background-color: rgba(120, 200, 80, 0.8); }
-.type-button.ice { background-color: rgba(152, 216, 216, 0.8); }
-.type-button.fighting { background-color: rgba(192, 48, 40, 0.8); }
-.type-button.poison { background-color: rgba(160, 64, 160, 0.8); }
-.type-button.ground { background-color: rgba(224, 192, 104, 0.8); }
-.type-button.flying { background-color: rgba(168, 144, 240, 0.8); }
-.type-button.psychic { background-color: rgba(248, 88, 136, 0.8); }
-.type-button.bug { background-color: rgba(168, 184, 32, 0.8); }
-.type-button.rock { background-color: rgba(184, 160, 56, 0.8); }
-.type-button.ghost { background-color: rgba(112, 88, 152, 0.8); }
-.type-button.dragon { background-color: rgba(112, 56, 248, 0.8); }
-.type-button.dark { background-color: rgba(112, 88, 72, 0.8); }
-.type-button.steel { background-color: rgba(184, 184, 208, 0.8); }
-.type-button.fairy { background-color: rgba(238, 153, 172, 0.8); }
+.type-button.normal { background-color: rgba(168,168,120,0.85); color: #fff; }
+.type-button.fire { background-color: rgba(240,128,48,0.85); color: #fff; }
+.type-button.water { background-color: rgba(104,144,240,0.85); color: #fff; }
+.type-button.electric { background-color: rgba(248,208,48,0.85); color: #fff; }
+.type-button.grass { background-color: rgba(120,200,80,0.85); color: #fff; }
+.type-button.ice { background-color: rgba(152,216,216,0.85); color: #fff; }
+.type-button.fighting { background-color: rgba(192,48,40,0.85); color: #fff; }
+.type-button.poison { background-color: rgba(160,64,160,0.85); color: #fff; }
+.type-button.ground { background-color: rgba(224,192,104,0.85); color: #fff; }
+.type-button.flying { background-color: rgba(168,144,240,0.85); color: #fff; }
+.type-button.psychic { background-color: rgba(248,88,136,0.85); color: #fff; }
+.type-button.bug { background-color: rgba(168,184,32,0.85); color: #fff; }
+.type-button.rock { background-color: rgba(184,160,56,0.85); color: #fff; }
+.type-button.ghost { background-color: rgba(112,88,152,0.85); color: #fff; }
+.type-button.dragon { background-color: rgba(112,56,248,0.85); color: #fff; }
+.type-button.dark { background-color: rgba(112,88,72,0.85); color: #fff; }
+.type-button.steel { background-color: rgba(184,184,208,0.85); color: #fff; }
+.type-button.fairy { background-color: rgba(238,153,172,0.85); color: #fff; }
 
 .type-button.selected.normal { background-color: #A8A878; }
 .type-button.selected.fire { background-color: #F08030; }
