@@ -255,11 +255,11 @@ function PokemonDetail() {
                   <h4>공격 시 상성</h4>
                   <div className="matchups-grid">
                     {getOffensiveMatchups().map((matchup, index) => (
-                      <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'offensive' : matchup.effectiveness < 1 ? 'resistant' : 'normal'}`}>
+                      <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'offensive' : matchup.effectiveness < 1 && matchup.effectiveness > 0 ? 'resistant' : matchup.effectiveness === 0 ? 'immune' : 'normal'}`}>
                         <div className="matchup-info">
                           <span className="matchup-type">{matchup.koreanDefendingType}</span>
                           {pokemon.types.length > 1 && (
-                            <span className="attacking-type">- {matchup.koreanAttackingType} 타입으로 공격하면 {matchup.effectiveness > 1 ? '효과가 뛰어남' : '효과가 반감됨'}</span>
+                            <span className="attacking-type">- {matchup.koreanAttackingType} 타입으로 공격 시</span>
                           )}
                         </div>
                         <span className="matchup-effectiveness">×{matchup.effectiveness}</span>

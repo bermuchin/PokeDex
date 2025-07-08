@@ -652,6 +652,11 @@ h1 {
   background: #f8f9fa;
 }
 
+.matchup-item.immune {
+  border-left-color: #6c757d;
+  background: #e9ecef;
+}
+
 .matchup-type {
   font-weight: 500;
   color: #333;
@@ -678,6 +683,11 @@ h1 {
 
 .matchup-item.normal .matchup-effectiveness {
   color: #6c757d;
+}
+
+.matchup-item.immune .matchup-effectiveness {
+  color: #6c757d;
+  font-weight: bold;
 }
 
 .pokemon-detail-header {
