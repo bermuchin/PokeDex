@@ -73,105 +73,108 @@ function PokemonDetail() {
   };
 
   // 상성 정보 계산
-  const getTypeEffectiveness = (attackingType, defendingTypes) => {
-    const typeChart = {
-      normal: { rock: 0.5, ghost: 0, steel: 0.5 },
-      fire: { fire: 0.5, water: 0.5, grass: 2, ice: 2, bug: 2, rock: 0.5, dragon: 0.5, steel: 2 },
-      water: { fire: 2, water: 0.5, grass: 0.5, ground: 2, rock: 2, dragon: 0.5 },
-      electric: { water: 2, electric: 0.5, grass: 0.5, ground: 0, flying: 2, dragon: 0.5 },
-      grass: { fire: 0.5, water: 2, grass: 0.5, poison: 0.5, ground: 2, flying: 0.5, bug: 0.5, rock: 2, dragon: 0.5, steel: 0.5 },
-      ice: { fire: 0.5, water: 0.5, grass: 2, ice: 0.5, ground: 2, flying: 2, dragon: 2, steel: 0.5 },
-      fighting: { normal: 2, ice: 2, poison: 0.5, flying: 0.5, psychic: 0.5, bug: 0.5, rock: 2, ghost: 0, steel: 2, fairy: 0.5 },
-      poison: { grass: 2, poison: 0.5, ground: 0.5, rock: 0.5, ghost: 0.5, steel: 0, fairy: 2 },
-      ground: { fire: 2, electric: 2, grass: 0.5, poison: 2, flying: 0, bug: 0.5, rock: 2, steel: 2 },
-      flying: { electric: 0.5, grass: 2, fighting: 2, bug: 2, rock: 0.5, steel: 0.5 },
-      psychic: { fighting: 2, poison: 2, psychic: 0.5, dark: 0, steel: 0.5 },
-      bug: { fire: 0.5, grass: 2, fighting: 0.5, poison: 0.5, flying: 0.5, psychic: 2, ghost: 0.5, dark: 2, steel: 0.5, fairy: 0.5 },
-      rock: { fire: 2, ice: 2, fighting: 0.5, ground: 0.5, flying: 2, bug: 2, steel: 0.5 },
-      ghost: { normal: 0, psychic: 2, ghost: 2, dark: 0.5 },
-      dragon: { dragon: 2, steel: 0.5, fairy: 0 },
-      dark: { fighting: 0.5, psychic: 2, ghost: 2, dark: 0.5, fairy: 0.5 },
-      steel: { fire: 0.5, water: 0.5, electric: 0.5, ice: 2, rock: 2, steel: 0.5, fairy: 2 },
-      fairy: { fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 }
-    };
+  // 타입 상성 차트를 상수로 분리
+  const TYPE_CHART = {
+    normal: { rock: 0.5, ghost: 0, steel: 0.5 },
+    fire: { fire: 0.5, water: 0.5, grass: 2, ice: 2, bug: 2, rock: 0.5, dragon: 0.5, steel: 2 },
+    water: { fire: 2, water: 0.5, grass: 0.5, ground: 2, rock: 2, dragon: 0.5 },
+    electric: { water: 2, electric: 0.5, grass: 0.5, ground: 0, flying: 2, dragon: 0.5 },
+    grass: { fire: 0.5, water: 2, grass: 0.5, poison: 0.5, ground: 2, flying: 0.5, bug: 0.5, rock: 2, dragon: 0.5, steel: 0.5 },
+    ice: { fire: 0.5, water: 0.5, grass: 2, ice: 0.5, ground: 2, flying: 2, dragon: 2, steel: 0.5 },
+    fighting: { normal: 2, ice: 2, poison: 0.5, flying: 0.5, psychic: 0.5, bug: 0.5, rock: 2, ghost: 0, steel: 2, fairy: 0.5 },
+    poison: { grass: 2, poison: 0.5, ground: 0.5, rock: 0.5, ghost: 0.5, steel: 0, fairy: 2 },
+    ground: { fire: 2, electric: 2, grass: 0.5, poison: 2, flying: 0, bug: 0.5, rock: 2, steel: 2 },
+    flying: { electric: 0.5, grass: 2, fighting: 2, bug: 2, rock: 0.5, steel: 0.5 },
+    psychic: { fighting: 2, poison: 2, psychic: 0.5, dark: 0, steel: 0.5 },
+    bug: { fire: 0.5, grass: 2, fighting: 0.5, poison: 0.5, flying: 0.5, psychic: 2, ghost: 0.5, dark: 2, steel: 0.5, fairy: 0.5 },
+    rock: { fire: 2, ice: 2, fighting: 0.5, ground: 0.5, flying: 2, bug: 2, steel: 0.5 },
+    ghost: { normal: 0, psychic: 2, ghost: 2, dark: 0.5 },
+    dragon: { dragon: 2, steel: 0.5, fairy: 0 },
+    dark: { fighting: 0.5, psychic: 2, ghost: 2, dark: 0.5, fairy: 0.5 },
+    steel: { fire: 0.5, water: 0.5, electric: 0.5, ice: 2, rock: 2, steel: 0.5, fairy: 2 },
+    fairy: { fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 }
+  };
 
+  const getTypeEffectiveness = (attackingType, defendingTypes) => {
     let effectiveness = 1;
     defendingTypes.forEach(defendingType => {
-      if (typeChart[attackingType] && typeChart[attackingType][defendingType] !== undefined) {
-        effectiveness *= typeChart[attackingType][defendingType];
+      if (TYPE_CHART[attackingType] && TYPE_CHART[attackingType][defendingType] !== undefined) {
+        effectiveness *= TYPE_CHART[attackingType][defendingType];
       }
     });
     return effectiveness;
   };
 
+  // 모든 타입 배열을 상수로 분리
+  const ALL_TYPES = ['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'];
+
   const getOffensiveMatchups = () => {
     if (!pokemon) return [];
     
-    const allTypes = ['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'];
     const matchups = [];
     
+    // 한국어 타입명을 미리 계산
+    const koreanTypeNames = {};
+    pokemon.types.forEach(type => {
+      koreanTypeNames[type] = getKoreanTypeName(type);
+    });
+    
     pokemon.types.forEach(attackingType => {
-      allTypes.forEach(defendingType => {
+      const koreanAttackingType = koreanTypeNames[attackingType];
+      
+      ALL_TYPES.forEach(defendingType => {
         const effectiveness = getTypeEffectiveness(attackingType, [defendingType]);
         if (effectiveness !== 1) {
           matchups.push({
             attackingType,
             defendingType,
             effectiveness,
-            koreanAttackingType: getKoreanTypeName(attackingType),
+            koreanAttackingType,
             koreanDefendingType: getKoreanTypeName(defendingType)
           });
         }
       });
     });
     
-    // 같은 효과를 가진 타입들을 그룹화
-    const groupedMatchups = [];
-    const groupedByEffect = {};
+    // 같은 공격 타입과 효과를 가진 방어 타입들을 그룹화
+    const groupedByAttack = {};
     
     matchups.forEach(matchup => {
       const key = `${matchup.attackingType}-${matchup.effectiveness}`;
-      if (!groupedByEffect[key]) {
-        groupedByEffect[key] = {
+      if (!groupedByAttack[key]) {
+        groupedByAttack[key] = {
           attackingType: matchup.attackingType,
           effectiveness: matchup.effectiveness,
           koreanAttackingType: matchup.koreanAttackingType,
           defendingTypes: []
         };
       }
-      groupedByEffect[key].defendingTypes.push(matchup.koreanDefendingType);
+      groupedByAttack[key].defendingTypes.push(matchup.koreanDefendingType);
     });
     
-    // 그룹화된 데이터를 배열로 변환
-    Object.values(groupedByEffect).forEach(group => {
-      groupedMatchups.push({
+    // 그룹화된 데이터를 배열로 변환하고 정렬
+    return Object.values(groupedByAttack)
+      .map(group => ({
         attackingType: group.attackingType,
         effectiveness: group.effectiveness,
         koreanAttackingType: group.koreanAttackingType,
         koreanDefendingTypes: group.defendingTypes.join(', ')
-      });
-    });
-    
-    return groupedMatchups.sort((a, b) => b.effectiveness - a.effectiveness);
+      }))
+      .sort((a, b) => b.effectiveness - a.effectiveness);
   };
 
   const getDefensiveMatchups = () => {
     if (!pokemon) return [];
     
-    const allTypes = ['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'];
-    const matchups = [];
+    // 한국어 타입명을 미리 계산
+    const koreanDefendingTypes = pokemon.types.map(type => getKoreanTypeName(type)).join(', ');
     
-    allTypes.forEach(attackingType => {
-      const effectiveness = getTypeEffectiveness(attackingType, pokemon.types);
-      matchups.push({
-        attackingType,
-        effectiveness,
-        koreanAttackingType: getKoreanTypeName(attackingType),
-        koreanDefendingType: pokemon.types.map(type => getKoreanTypeName(type)).join(', ')
-      });
-    });
-    
-    return matchups.sort((a, b) => b.effectiveness - a.effectiveness);
+    return ALL_TYPES.map(attackingType => ({
+      attackingType,
+      effectiveness: getTypeEffectiveness(attackingType, pokemon.types),
+      koreanAttackingType: getKoreanTypeName(attackingType),
+      koreanDefendingType: koreanDefendingTypes
+    })).sort((a, b) => b.effectiveness - a.effectiveness);
   };
 
   if (loading) {
