@@ -538,23 +538,25 @@ function PokemonList() {
         )}
       </div>
       <div className="pokemon-grid">
-        {filteredPokemons.map((pokemon) => (
-          <div
-            key={pokemon.id}
-            className="pokemon-card"
-            onClick={() => handlePokemonClick(pokemon)}
-          >
-            <img src={pokemon.image} alt={pokemon.koreanName} />
-            <h3>{pokemon.koreanName}</h3>
-            <div className="types">
-              {pokemon.types.map((type) => (
-                <span key={type} className={`type ${type}`}>
-                  {getKoreanTypeName(type)}
-                </span>
-              ))}
+        {filteredPokemons
+          .sort((a, b) => a.id - b.id)
+          .map((pokemon) => (
+            <div
+              key={pokemon.id}
+              className="pokemon-card"
+              onClick={() => handlePokemonClick(pokemon)}
+            >
+              <img src={pokemon.image} alt={pokemon.koreanName} />
+              <h3>{pokemon.koreanName}</h3>
+              <div className="types">
+                {pokemon.types.map((type) => (
+                  <span key={type} className={`type ${type}`}>
+                    {getKoreanTypeName(type)}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
       {/* 무한 스크롤 하단 감지용 div */}
       <div ref={loaderRef} style={{ height: 40 }} />
