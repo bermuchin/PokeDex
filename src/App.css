@@ -7,6 +7,7 @@ body, #root {
   padding: 0;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   overflow-x: hidden;
+  font-weight: 300;
 }
 
 /* 세대별 배경 이미지 */
@@ -62,6 +63,7 @@ h1 {
   text-align: center;
   color: white;
   font-size: 2.5rem;
+  font-weight: 300;
   margin-bottom: 30px;
   text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
   background: rgba(0,0,0,0.45);
@@ -160,7 +162,7 @@ h1 {
   color: white;
   font-size: 0.9rem;
   margin-bottom: 10px;
-  font-weight: bold;
+  font-weight: 300;
 }
 
 .type-buttons {
@@ -177,7 +179,7 @@ h1 {
   border: 2px solid transparent;
   border-radius: 20px;
   font-size: 0.8rem;
-  font-weight: bold;
+  font-weight: 400;
   cursor: pointer;
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.2);
@@ -333,11 +335,15 @@ h1 {
   background: white;
   border-radius: 15px;
   padding: 20px;
-  text-align: center;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 200px;
 }
 
 .pokemon-card:hover {
@@ -346,22 +352,27 @@ h1 {
 }
 
 .pokemon-card img {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 15px;
+  width: 140px;
+  height: 140px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  object-fit: contain;
 }
 
 .pokemon-card h3 {
-  margin: 0 0 15px 0;
+  margin: 0 0 10px 0;
   color: #333;
   font-size: 1.3rem;
+  font-weight: 300;
   text-transform: capitalize;
+  text-align: left;
 }
 
 .types {
   display: flex;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -369,7 +380,7 @@ h1 {
   padding: 4px 8px;
   border-radius: 15px;
   font-size: 0.7rem;
-  font-weight: bold;
+  font-weight: 400;
   text-transform: uppercase;
   color: white;
 }
@@ -453,6 +464,7 @@ h1 {
   margin: 0 0 10px 0;
   color: #333;
   font-size: 1.8rem;
+  font-weight: 300;
 }
 
 .pokemon-number {
@@ -470,6 +482,7 @@ h1 {
   margin: 0 0 20px 0;
   color: #333;
   font-size: 1.3rem;
+  font-weight: 300;
 }
 
 .stat-row {
@@ -481,7 +494,7 @@ h1 {
 
 .stat-label {
   min-width: 80px;
-  font-weight: bold;
+  font-weight: 400;
   color: #333;
 }
 
@@ -567,16 +580,19 @@ h1 {
   
   .pokemon-card {
     padding: 12px;
+    height: 160px;
   }
   
   .pokemon-card img {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
+    bottom: 8px;
+    right: 8px;
   }
   
   .pokemon-card h3 {
     font-size: 1rem;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
   
   .search-input {
@@ -629,11 +645,14 @@ h1 {
   
   .pokemon-card {
     padding: 18px;
+    height: 180px;
   }
   
   .pokemon-card img {
-    width: 110px;
-    height: 110px;
+    width: 120px;
+    height: 120px;
+    bottom: 12px;
+    right: 12px;
   }
 }
 
@@ -647,16 +666,19 @@ h1 {
   
   .pokemon-card {
     padding: 8px;
+    height: 140px;
   }
   
   .pokemon-card img {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
+    bottom: 6px;
+    right: 6px;
   }
   
   .pokemon-card h3 {
     font-size: 0.9rem;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   
   h1 {
@@ -704,7 +726,7 @@ h1 {
   border-radius: 20px;
   background: #fff;
   color: #5a4fcf;
-  font-weight: bold;
+  font-weight: 400;
   font-size: 1rem;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
