@@ -1019,6 +1019,7 @@ h1 {
   }
   .matchup-type {
     font-size: 0.9rem;
+    font-weight: 700;
   }
   .matchup-effectiveness {
     font-size: 1rem;
@@ -1102,6 +1103,7 @@ h1 {
   }
   .matchup-type {
     font-size: 0.9rem;
+    font-weight: 700;
   }
   .matchup-effectiveness {
     font-size: 1rem;
@@ -1176,6 +1178,9 @@ h1 {
 @media (max-width: 768px) {
   .app {
     background-size: auto 100vh !important;
+  }
+  .generation-select-screen {
+    min-height: auto;
   }
 }
 
