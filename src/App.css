@@ -1076,11 +1076,17 @@ h1 {
     font-size: 0.85em;
     color: #bbb;
   }
+  .app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
   .pokemon-detail-container {
     padding: 12px 4px;
     margin: 0 auto;
     max-width: 480px;
     width: 100%;
+    box-sizing: border-box;
   }
   .pokemon-detail-page .ability {
     padding: 12px;
@@ -1245,7 +1251,7 @@ h1 {
 
 .search-results-container {
   background: rgba(30, 30, 40, 0.65);
-  padding: 10px 18px;
+  padding: 6px 14px;
   border-radius: 16px;
   margin: 16px auto 0 auto;
   display: flex;
@@ -1253,10 +1259,35 @@ h1 {
   justify-content: center;
   color: #fff;
   font-weight: 400;
-  min-height: 48px;
+  min-height: 32px;
   min-width: 180px;
 }
 
 .type-selector-label-container label {
   color: #fff;
+}
+
+.habitat-content {
+  padding: 18px 0;
+}
+.habitat-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.habitat-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.habitat-item:last-child {
+  border-bottom: none;
+}
+.habitat-versions {
+  color: #888;
+  font-size: 0.95em;
+  margin-left: 6px;
 }
