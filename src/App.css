@@ -2,10 +2,11 @@
 
 body, #root {
   min-height: 100vh;
-  width: 100vw;
+  width: 100%;
   margin: 0;
   padding: 0;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  overflow-x: hidden;
 }
 
 /* 세대별 배경 이미지 */
@@ -51,9 +52,10 @@ body, #root {
 
 .app {
   min-height: 100vh;
-  width: 100vw;
+  width: 100%;
   padding: 20px;
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 h1 {
@@ -100,6 +102,9 @@ h1 {
   outline: none;
   transition: box-shadow 0.3s ease;
   margin-bottom: 15px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .search-input:focus {
@@ -361,9 +366,9 @@ h1 {
 }
 
 .type {
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 15px;
+  font-size: 0.7rem;
   font-weight: bold;
   text-transform: uppercase;
   color: white;
@@ -551,8 +556,8 @@ h1 {
 
 @media (max-width: 768px) {
   .pokemon-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
     padding: 15px 0;
   }
   
@@ -561,22 +566,24 @@ h1 {
   }
   
   .pokemon-card {
-    padding: 10px;
+    padding: 12px;
   }
   
   .pokemon-card img {
-    width: 70px;
-    height: 70px;
+    width: 80px;
+    height: 80px;
   }
   
   .pokemon-card h3 {
-    font-size: 0.9rem;
-    margin-bottom: 8px;
+    font-size: 1rem;
+    margin-bottom: 10px;
   }
   
   .search-input {
-    max-width: 100%;
+    max-width: 90%;
     padding: 12px 15px;
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .modal-content {
@@ -602,6 +609,15 @@ h1 {
     padding: 6px 10px;
     font-size: 0.7rem;
   }
+  
+  .types {
+    gap: 4px;
+  }
+  
+  .type {
+    padding: 3px 6px;
+    font-size: 0.6rem;
+  }
 }
 
 /* 태블릿 크기 화면 */
@@ -624,23 +640,23 @@ h1 {
 /* 매우 작은 모바일 화면 */
 @media (max-width: 480px) {
   .pokemon-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
     padding: 10px 0;
   }
   
   .pokemon-card {
-    padding: 6px;
+    padding: 8px;
   }
   
   .pokemon-card img {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
   }
   
   .pokemon-card h3 {
-    font-size: 0.8rem;
-    margin-bottom: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
   }
   
   h1 {
@@ -655,6 +671,22 @@ h1 {
   .type-button {
     padding: 4px 8px;
     font-size: 0.6rem;
+  }
+  
+  .types {
+    gap: 3px;
+  }
+  
+  .type {
+    padding: 2px 5px;
+    font-size: 0.5rem;
+  }
+  
+  .search-input {
+    max-width: 85%;
+    padding: 10px 12px;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
