@@ -1266,28 +1266,3 @@ h1 {
 .type-selector-label-container label {
   color: #fff;
 }
-
-.habitat-content {
-  padding: 18px 0;
-}
-.habitat-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.habitat-item {
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.habitat-item:last-child {
-  border-bottom: none;
-}
-.habitat-versions {
-  color: #888;
-  font-size: 0.95em;
-  margin-left: 6px;
-}

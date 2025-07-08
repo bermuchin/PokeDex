@@ -242,12 +242,7 @@ function PokemonDetail() {
             >
               배틀 상성
             </button>
-            <button 
-              className={`tab-button ${activeTab === 'habitat' ? 'active' : ''}`}
-              onClick={() => setActiveTab('habitat')}
-            >
-              서식지
-            </button>
+            {/* 서식지 탭 제거 */}
           </div>
           
           <div className="tab-content">
@@ -318,29 +313,7 @@ function PokemonDetail() {
                 </div>
               </div>
             )}
-            {activeTab === 'habitat' && (
-              <div className="habitat-content">
-                {habitatLoading && <div className="loading">서식지 정보를 불러오는 중...</div>}
-                {habitatError && <div className="error">{habitatError}</div>}
-                {!habitatLoading && !habitatError && habitats.length === 0 && (
-                  <div className="no-results">서식지 정보가 없습니다.</div>
-                )}
-                {!habitatLoading && !habitatError && habitats.length > 0 && (
-                  <ul className="habitat-list">
-                    {habitats.map((area, idx) => (
-                      <li key={idx} className="habitat-item">
-                        <span>{area.location_area.name.replace(/-/g, ' ')}</span>
-                        {area.version_details && area.version_details.length > 0 && (
-                          <span className="habitat-versions">
-                            ({area.version_details.map(v => v.version.name).join(', ')})
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
+            {/* 서식지 탭 제거 */}
           </div>
         </div>
       </div>
