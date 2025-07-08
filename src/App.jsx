@@ -113,7 +113,7 @@ function PokemonDetail() {
     pokemon.types.forEach(attackingType => {
       allTypes.forEach(defendingType => {
         const effectiveness = getTypeEffectiveness(attackingType, [defendingType]);
-        if (effectiveness > 1) {
+        if (effectiveness !== 1) {
           matchups.push({
             attackingType,
             defendingType,
@@ -215,7 +215,7 @@ function PokemonDetail() {
               className={`tab-button ${activeTab === 'matchups' ? 'active' : ''}`}
               onClick={() => setActiveTab('matchups')}
             >
-              상성
+              배틀 상성
             </button>
           </div>
           
@@ -254,11 +254,16 @@ function PokemonDetail() {
             {activeTab === 'matchups' && (
               <div className="matchups-content">
                 <div className="matchups-section">
-                  <h4>공격 시 유리한 상성</h4>
+                  <h4>공격 시 상성</h4>
                   <div className="matchups-grid">
                     {getOffensiveMatchups().map((matchup, index) => (
-                      <div key={index} className="matchup-item offensive">
-                        <span className="matchup-type">{matchup.koreanDefendingType}</span>
+                      <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'offensive' : matchup.effectiveness < 1 ? 'resistant' : 'normal'}`}>
+                        <div className="matchup-info">
+                          <span className="matchup-type">{matchup.koreanDefendingType}</span>
+                          {pokemon.types.length > 1 && (
+                            <span className="attacking-type">- {matchup.koreanAttackingType} 타입으로 공격해야 효과가 {matchup.effectiveness > 1 ? '뛰어남' : '반감됨'}</span>
+                          )}
+                        </div>
                         <span className="matchup-effectiveness">×{matchup.effectiveness}</span>
                       </div>
                     ))}

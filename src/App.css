@@ -525,10 +525,9 @@ h1 {
 
 .tab-buttons {
   display: flex;
-  gap: 10px;
   margin-bottom: 25px;
   border-bottom: 2px solid #eee;
-  padding-bottom: 10px;
+  padding-bottom: 0;
 }
 
 .tab-button {
@@ -536,21 +535,43 @@ h1 {
   border: none;
   background: #f8f9fa;
   color: #666;
-  border-radius: 8px;
+  border-radius: 8px 8px 0 0;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-right: 2px;
+  border: 2px solid #eee;
+  border-bottom: none;
+  position: relative;
+}
+
+.tab-button:first-child {
+  margin-left: 0;
 }
 
 .tab-button:hover {
   background: #e9ecef;
   color: #333;
+  border-color: #ddd;
 }
 
 .tab-button.active {
-  background: #007bff;
-  color: white;
+  background: white;
+  color: #007bff;
+  border-color: #007bff;
+  border-bottom-color: white;
+  z-index: 1;
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: white;
 }
 
 .tab-content {
@@ -598,6 +619,19 @@ h1 {
   border-left: 4px solid #007bff;
 }
 
+.matchup-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attacking-type {
+  font-size: 0.75rem;
+  color: #555;
+  font-style: normal;
+  line-height: 1.3;
+}
+
 .matchup-item.offensive {
   border-left-color: #007bff;
   background: #e3f2fd;
@@ -615,6 +649,7 @@ h1 {
 
 .matchup-item.normal {
   border-left-color: #6c757d;
+  background: #f8f9fa;
 }
 
 .matchup-type {
@@ -639,6 +674,10 @@ h1 {
 
 .matchup-item.resistant .matchup-effectiveness {
   color: #28a745;
+}
+
+.matchup-item.normal .matchup-effectiveness {
+  color: #6c757d;
 }
 
 .pokemon-detail-header {
@@ -830,20 +869,20 @@ h1 {
   }
   
   .pokemon-detail-header .types {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 10px;
-  }
-  
-  .pokemon-detail-header .type {
-    padding: 6px 12px;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: white;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-  }
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.pokemon-detail-header .type {
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
   
   .pokemon-detail-header {
     flex-direction: column;
@@ -968,12 +1007,13 @@ h1 {
   }
   
   .tab-buttons {
-    gap: 6px;
+    gap: 1px;
   }
   
   .tab-button {
     padding: 8px 12px;
     font-size: 0.8rem;
+    margin-right: 1px;
   }
   
   .matchups-content h4 {
@@ -1017,12 +1057,15 @@ h1 {
   
   .pokemon-detail-header .types {
     justify-content: center;
-    margin-top: 6px;
+    margin-top: 8px;
+    gap: 8px;
   }
   
   .pokemon-detail-header .type {
-    padding: 4px 8px;
-    font-size: 0.65rem;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
   }
   
   .pokemon-detail-container {
@@ -1045,21 +1088,26 @@ h1 {
   
   .tab-buttons {
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 2px;
   }
   
   .tab-button {
     padding: 10px 16px;
     font-size: 0.9rem;
+    margin-right: 1px;
   }
   
   .matchups-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
   }
   
   .matchup-item {
     padding: 10px 12px;
+  }
+  
+  .attacking-type {
+    font-size: 0.65rem;
   }
   
   .matchups-section {
