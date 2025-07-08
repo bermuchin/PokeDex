@@ -1282,9 +1282,9 @@ h1 {
 
 @media (min-width: 769px) {
   .type-button {
-    font-size: 0.95rem;
+    font-size: 0.5rem;
   }
   .search-input {
-    font-size: 0.95rem;
+    font-size: 0.8rem;
   }
 }
