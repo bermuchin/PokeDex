@@ -5,7 +5,7 @@ body, #root {
   width: 100%;
   margin: 0;
   padding: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #fff;
   overflow-x: hidden;
   font-weight: 300;
 }
@@ -57,7 +57,8 @@ body, #root {
   padding: 10px;
   box-sizing: border-box;
   overflow-x: hidden;
-  background-size: auto 100vh !important;
+  background-size: cover !important;
+  background-attachment: fixed !important;
   transition: background-size 0.5s cubic-bezier(.4,0,.2,1);
 }
 
@@ -648,55 +649,34 @@ h1 {
   border-left-color: #007bff;
   background: #e3f2fd;
 }
-
 .matchup-item.weak {
   border-left-color: #dc3545;
   background: #f8d7da;
 }
-
 .matchup-item.resistant {
-  border-left-color: #28a745;
-  background: #d4edda;
+  border-left-color: #007bff;
+  background: #e3f2fd;
 }
-
 .matchup-item.normal {
   border-left-color: #6c757d;
   background: #f8f9fa;
 }
-
 .matchup-item.immune {
   border-left-color: #495057;
   background: #dee2e6;
 }
-
-.matchup-type {
-  font-weight: 500;
-  color: #333;
-  font-size: 1rem;
-}
-
-.matchup-effectiveness {
-  font-weight: 600;
-  color: #007bff;
-  font-size: 1.1rem;
-}
-
 .matchup-item.offensive .matchup-effectiveness {
   color: #007bff;
 }
-
 .matchup-item.weak .matchup-effectiveness {
   color: #dc3545;
 }
-
 .matchup-item.resistant .matchup-effectiveness {
-  color: #28a745;
+  color: #007bff;
 }
-
 .matchup-item.normal .matchup-effectiveness {
   color: #6c757d;
 }
-
 .matchup-item.immune .matchup-effectiveness {
   color: #495057;
   font-weight: bold;
@@ -1170,8 +1150,25 @@ h1 {
     background: none !important;
     box-shadow: none !important;
     border: none !important;
-    color: inherit !important;
   }
+  .stat-total-value.normal { color: #A8A878 !important; }
+  .stat-total-value.fire { color: #F08030 !important; }
+  .stat-total-value.water { color: #6890F0 !important; }
+  .stat-total-value.electric { color: #F8D030 !important; }
+  .stat-total-value.grass { color: #78C850 !important; }
+  .stat-total-value.ice { color: #98D8D8 !important; }
+  .stat-total-value.fighting { color: #C03028 !important; }
+  .stat-total-value.poison { color: #A040A0 !important; }
+  .stat-total-value.ground { color: #E0C068 !important; }
+  .stat-total-value.flying { color: #A890F0 !important; }
+  .stat-total-value.psychic { color: #F85888 !important; }
+  .stat-total-value.bug { color: #A8B820 !important; }
+  .stat-total-value.rock { color: #B8A038 !important; }
+  .stat-total-value.ghost { color: #705898 !important; }
+  .stat-total-value.dragon { color: #7038F8 !important; }
+  .stat-total-value.dark { color: #705848 !important; }
+  .stat-total-value.steel { color: #B8B8D0 !important; }
+  .stat-total-value.fairy { color: #EE99AC !important; }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
