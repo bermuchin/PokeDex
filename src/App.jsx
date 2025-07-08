@@ -41,6 +41,7 @@ function PokemonDetail() {
   const [pokemon, setPokemon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('abilities');
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -65,7 +66,85 @@ function PokemonDetail() {
   }, [id]);
 
   const handleBack = () => {
-    navigate(-1);
+    // URL에서 세대 정보를 가져오거나, 기본값으로 'all' 사용
+    const searchParams = new URLSearchParams(window.location.search);
+    const generation = searchParams.get('generation') || 'all';
+    navigate(`/?generation=${generation}`);
+  };
+
+  // 상성 정보 계산
+  const getTypeEffectiveness = (attackingType, defendingTypes) => {
+    const typeChart = {
+      normal: { rock: 0.5, ghost: 0, steel: 0.5 },
+      fire: { fire: 0.5, water: 0.5, grass: 2, ice: 2, bug: 2, rock: 0.5, dragon: 0.5, steel: 2 },
+      water: { fire: 2, water: 0.5, grass: 0.5, ground: 2, rock: 2, dragon: 0.5 },
+      electric: { water: 2, electric: 0.5, grass: 0.5, ground: 0, flying: 2, dragon: 0.5 },
+      grass: { fire: 0.5, water: 2, grass: 0.5, poison: 0.5, ground: 2, flying: 0.5, bug: 0.5, rock: 2, dragon: 0.5, steel: 0.5 },
+      ice: { fire: 0.5, water: 0.5, grass: 2, ice: 0.5, ground: 2, flying: 2, dragon: 2, steel: 0.5 },
+      fighting: { normal: 2, ice: 2, poison: 0.5, flying: 0.5, psychic: 0.5, bug: 0.5, rock: 2, ghost: 0, steel: 2, fairy: 0.5 },
+      poison: { grass: 2, poison: 0.5, ground: 0.5, rock: 0.5, ghost: 0.5, steel: 0, fairy: 2 },
+      ground: { fire: 2, electric: 2, grass: 0.5, poison: 2, flying: 0, bug: 0.5, rock: 2, steel: 2 },
+      flying: { electric: 0.5, grass: 2, fighting: 2, bug: 2, rock: 0.5, steel: 0.5 },
+      psychic: { fighting: 2, poison: 2, psychic: 0.5, dark: 0, steel: 0.5 },
+      bug: { fire: 0.5, grass: 2, fighting: 0.5, poison: 0.5, flying: 0.5, psychic: 2, ghost: 0.5, dark: 2, steel: 0.5, fairy: 0.5 },
+      rock: { fire: 2, ice: 2, fighting: 0.5, ground: 0.5, flying: 2, bug: 2, steel: 0.5 },
+      ghost: { normal: 0, psychic: 2, ghost: 2, dark: 0.5 },
+      dragon: { dragon: 2, steel: 0.5, fairy: 0 },
+      dark: { fighting: 0.5, psychic: 2, ghost: 2, dark: 0.5, fairy: 0.5 },
+      steel: { fire: 0.5, water: 0.5, electric: 0.5, ice: 2, rock: 2, steel: 0.5, fairy: 2 },
+      fairy: { fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 }
+    };
+
+    let effectiveness = 1;
+    defendingTypes.forEach(defendingType => {
+      if (typeChart[attackingType] && typeChart[attackingType][defendingType] !== undefined) {
+        effectiveness *= typeChart[attackingType][defendingType];
+      }
+    });
+    return effectiveness;
+  };
+
+  const getOffensiveMatchups = () => {
+    if (!pokemon) return [];
+    
+    const allTypes = ['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'];
+    const matchups = [];
+    
+    pokemon.types.forEach(attackingType => {
+      allTypes.forEach(defendingType => {
+        const effectiveness = getTypeEffectiveness(attackingType, [defendingType]);
+        if (effectiveness > 1) {
+          matchups.push({
+            attackingType,
+            defendingType,
+            effectiveness,
+            koreanAttackingType: getKoreanTypeName(attackingType),
+            koreanDefendingType: getKoreanTypeName(defendingType)
+          });
+        }
+      });
+    });
+    
+    return matchups.sort((a, b) => b.effectiveness - a.effectiveness);
+  };
+
+  const getDefensiveMatchups = () => {
+    if (!pokemon) return [];
+    
+    const allTypes = ['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'];
+    const matchups = [];
+    
+    allTypes.forEach(attackingType => {
+      const effectiveness = getTypeEffectiveness(attackingType, pokemon.types);
+      matchups.push({
+        attackingType,
+        effectiveness,
+        koreanAttackingType: getKoreanTypeName(attackingType),
+        koreanDefendingType: pokemon.types.map(type => getKoreanTypeName(type)).join(', ')
+      });
+    });
+    
+    return matchups.sort((a, b) => b.effectiveness - a.effectiveness);
   };
 
   if (loading) {
@@ -104,7 +183,9 @@ function PokemonDetail() {
             </div>
           </div>
         </div>
-        <div className="pokemon-detail-stats">
+        
+        {/* 기본 정보 */}
+        <div className="basic-info">
           <div className="stat-row">
             <span className="stat-label">키:</span>
             <span className="stat-value">{pokemon.height}m</span>
@@ -113,31 +194,91 @@ function PokemonDetail() {
             <span className="stat-label">몸무게:</span>
             <span className="stat-value">{pokemon.weight}kg</span>
           </div>
-          <h3>특성</h3>
-          <div className="abilities">
-            {pokemon.abilities.map((ability, index) => (
-              <div key={index} className={`ability ${ability.isHidden ? 'hidden' : 'normal'}`}>
-                <div className="ability-header">
-                  <span className="ability-name">{getKoreanAbilityName(ability.name)}</span>
-                  {ability.isHidden && <span className="hidden-badge">숨겨진 특성</span>}
-                </div>
-                <div className="ability-description">{ability.description}</div>
-              </div>
-            ))}
+        </div>
+
+        {/* 탭 시스템 */}
+        <div className="tab-container">
+          <div className="tab-buttons">
+            <button 
+              className={`tab-button ${activeTab === 'abilities' ? 'active' : ''}`}
+              onClick={() => setActiveTab('abilities')}
+            >
+              특성
+            </button>
+            <button 
+              className={`tab-button ${activeTab === 'stats' ? 'active' : ''}`}
+              onClick={() => setActiveTab('stats')}
+            >
+              능력치
+            </button>
+            <button 
+              className={`tab-button ${activeTab === 'matchups' ? 'active' : ''}`}
+              onClick={() => setActiveTab('matchups')}
+            >
+              상성
+            </button>
           </div>
-          <h3>기본 능력치</h3>
-          {pokemon.stats.map((stat) => (
-            <div key={stat.name} className="stat-row">
-              <span className="stat-label">{getKoreanStatName(stat.name)}:</span>
-              <span className="stat-value">{stat.value}</span>
-              <div className="stat-bar">
-                <div
-                  className={`stat-bar-fill ${pokemon.types[0]}`}
-                  style={{ width: `${(stat.value / 255) * 100}%` }}
-                ></div>
+          
+          <div className="tab-content">
+            {activeTab === 'abilities' && (
+              <div className="abilities">
+                {pokemon.abilities.map((ability, index) => (
+                  <div key={index} className={`ability ${ability.isHidden ? 'hidden' : 'normal'}`}>
+                    <div className="ability-header">
+                      <span className="ability-name">{getKoreanAbilityName(ability.name)}</span>
+                      {ability.isHidden && <span className="hidden-badge">숨겨진 특성</span>}
+                    </div>
+                    <div className="ability-description">{ability.description}</div>
+                  </div>
+                ))}
               </div>
-            </div>
-          ))}
+            )}
+            
+            {activeTab === 'stats' && (
+              <div className="stats-content">
+                {pokemon.stats.map((stat) => (
+                  <div key={stat.name} className="stat-row">
+                    <span className="stat-label">{getKoreanStatName(stat.name)}:</span>
+                    <span className="stat-value">{stat.value}</span>
+                    <div className="stat-bar">
+                      <div
+                        className={`stat-bar-fill ${pokemon.types[0]}`}
+                        style={{ width: `${(stat.value / 255) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {activeTab === 'matchups' && (
+              <div className="matchups-content">
+                <div className="matchups-section">
+                  <h4>공격 시 유리한 상성</h4>
+                  <div className="matchups-grid">
+                    {getOffensiveMatchups().map((matchup, index) => (
+                      <div key={index} className="matchup-item offensive">
+                        <span className="matchup-type">{matchup.koreanDefendingType}</span>
+                        <span className="matchup-effectiveness">×{matchup.effectiveness}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="matchups-section">
+                  <h4>방어 시 상성</h4>
+                  <div className="matchups-grid">
+                    {getDefensiveMatchups().map((matchup, index) => (
+                      <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'weak' : matchup.effectiveness < 1 ? 'resistant' : 'normal'}`}>
+                        <span className="matchup-type">{matchup.koreanAttackingType}</span>
+                        <span className="matchup-effectiveness">×{matchup.effectiveness}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -154,6 +295,16 @@ function PokemonList() {
   const [selectedTypes, setSelectedTypes] = useState(['all'])
   const [selectedGeneration, setSelectedGeneration] = useState(null)
   const [showDex, setShowDex] = useState(false)
+
+  // URL에서 세대 정보를 읽어오기
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const generationFromUrl = searchParams.get('generation');
+    if (generationFromUrl) {
+      setSelectedGeneration(generationFromUrl);
+      setShowDex(true);
+    }
+  }, []);
 
   // 세대/전국도감 선택 시 백엔드 API에서 포켓몬 정보 가져오기
   useEffect(() => {
@@ -196,7 +347,7 @@ function PokemonList() {
   });
 
   const handlePokemonClick = (pokemon) => {
-    navigate(`/pokemon/${pokemon.id}`);
+    navigate(`/pokemon/${pokemon.id}?generation=${selectedGeneration}`);
   };
 
   const resetFilters = () => {
@@ -210,6 +361,8 @@ function PokemonList() {
     setSelectedTypes(['all']);
     setShowDex(true);
     setPokemons([]);
+    // URL 업데이트
+    navigate(`/?generation=${id}`);
   };
 
   const handleBackToGeneration = () => {
@@ -218,6 +371,7 @@ function PokemonList() {
     setSearchTerm('');
     setSelectedTypes(['all']);
     setPokemons([]);
+    navigate('/');
   };
 
   const typeOptions = [
