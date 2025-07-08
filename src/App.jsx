@@ -475,6 +475,16 @@ function PokemonList() {
     { value: 'fairy', label: '페어리' }
   ];
 
+  const handleTypeButtonClick = (type) => {
+    setSelectedTypes(prev => {
+      if (type === 'all') return ['all'];
+      if (prev.includes('all')) return [type];
+      if (prev.includes(type)) return prev.filter(t => t !== type);
+      if (prev.length < 2) return [...prev, type];
+      return prev;
+    });
+  };
+
   if (!showDex) {
     return (
       <div className="app generation-select-screen generation-select">
@@ -516,68 +526,34 @@ function PokemonList() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
         />
-        <div className="filter-container">
+        <div className="type-selector">
           <div className="type-selector-label-container">
             <label>타입 선택 (최대 2개):</label>
           </div>
-          <div className="type-buttons" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-            <div style={{ display: 'flex', width: '100%', gap: '8px' }}>
-              <button
-                key="all"
-                className={`type-button all${selectedTypes.includes('all') ? ' selected' : ''}`}
-                style={{ flex: 1, minWidth: 0 }}
-                onClick={() => setSelectedTypes(['all'])}
-              >
-                전체
-              </button>
-              {typeOptions.slice(1, 9).map(option => (
-                <button
-                  key={option.value}
-                  className={`type-button ${option.value}${selectedTypes.includes(option.value) ? ' selected' : ''}`}
-                  style={{ flex: 1, minWidth: 0 }}
-                  onClick={() => {
-                    const newTypes = selectedTypes.includes('all')
-                      ? [option.value]
-                      : selectedTypes.includes(option.value)
-                      ? selectedTypes.filter(t => t !== option.value)
-                      : selectedTypes.length < 2
-                      ? [...selectedTypes, option.value]
-                      : selectedTypes;
-                    setSelectedTypes(newTypes.length === 0 ? ['all'] : newTypes);
-                  }}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-            <div style={{ display: 'flex', width: '100%', gap: '8px' }}>
-              {typeOptions.slice(9).map(option => (
-                <button
-                  key={option.value}
-                  className={`type-button ${option.value}${selectedTypes.includes(option.value) ? ' selected' : ''}`}
-                  style={{ flex: 1, minWidth: 0 }}
-                  onClick={() => {
-                    const newTypes = selectedTypes.includes('all')
-                      ? [option.value]
-                      : selectedTypes.includes(option.value)
-                      ? selectedTypes.filter(t => t !== option.value)
-                      : selectedTypes.length < 2
-                      ? [...selectedTypes, option.value]
-                      : selectedTypes;
-                    setSelectedTypes(newTypes.length === 0 ? ['all'] : newTypes);
-                  }}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          {(searchTerm || !selectedTypes.includes('all')) && (
-            <button onClick={resetFilters} className="reset-button">
-              필터 초기화
+          <div className="type-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', justifyContent: 'flex-start' }}>
+            <button
+              key="all"
+              className={`type-button all${selectedTypes.includes('all') ? ' selected' : ''}`}
+              onClick={() => handleTypeButtonClick('all')}
+            >
+              전체
             </button>
-          )}
+            {typeOptions.slice(1).map(option => (
+              <button
+                key={option.value}
+                className={`type-button ${option.value}${selectedTypes.includes(option.value) ? ' selected' : ''}`}
+                onClick={() => handleTypeButtonClick(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
+        {(searchTerm || !selectedTypes.includes('all')) && (
+          <button onClick={resetFilters} className="reset-button">
+            필터 초기화
+          </button>
+        )}
         {(searchTerm || !selectedTypes.includes('all')) && (
           <div className="search-results-container">
             <div className="search-results">
