@@ -527,9 +527,6 @@ function PokemonList() {
           className="search-input"
         />
         <div className="type-selector">
-          <div className="type-selector-label-container">
-            <label>타입 선택 (최대 2개):</label>
-          </div>
           <div className="type-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', justifyContent: 'flex-start' }}>
             {typeOptions.slice(1).map(option => (
               <button
