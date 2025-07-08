@@ -410,95 +410,18 @@ h1 {
 .pokemon-detail-page {
   background: white;
   min-height: 100vh;
-  padding: 0;
-}
-
-/* 타입별 배경 스타일 */
-.pokemon-detail-page.type-normal {
-  background: linear-gradient(135deg, #A8A878 0%, #C6C6A7 100%);
-}
-
-.pokemon-detail-page.type-fire {
-  background: linear-gradient(135deg, #F08030 0%, #F5AC78 100%);
-}
-
-.pokemon-detail-page.type-water {
-  background: linear-gradient(135deg, #6890F0 0%, #9DB7F5 100%);
-}
-
-.pokemon-detail-page.type-electric {
-  background: linear-gradient(135deg, #F8D030 0%, #F4E88C 100%);
-}
-
-.pokemon-detail-page.type-grass {
-  background: linear-gradient(135deg, #78C850 0%, #A7DB8D 100%);
-}
-
-.pokemon-detail-page.type-ice {
-  background: linear-gradient(135deg, #98D8D8 0%, #BCE6E6 100%);
-}
-
-.pokemon-detail-page.type-fighting {
-  background: linear-gradient(135deg, #C03028 0%, #D67873 100%);
-  color: white;
-}
-
-.pokemon-detail-page.type-poison {
-  background: linear-gradient(135deg, #A040A0 0%, #C183C1 100%);
-}
-
-.pokemon-detail-page.type-ground {
-  background: linear-gradient(135deg, #E0C068 0%, #EBD69D 100%);
-}
-
-.pokemon-detail-page.type-flying {
-  background: linear-gradient(135deg, #A890F0 0%, #C6BCF7 100%);
-}
-
-.pokemon-detail-page.type-psychic {
-  background: linear-gradient(135deg, #F85888 0%, #FA92B2 100%);
-}
-
-.pokemon-detail-page.type-bug {
-  background: linear-gradient(135deg, #A8B820 0%, #C6D16E 100%);
-}
-
-.pokemon-detail-page.type-rock {
-  background: linear-gradient(135deg, #B8A038 0%, #D1C17D 100%);
-}
-
-.pokemon-detail-page.type-ghost {
-  background: linear-gradient(135deg, #705898 0%, #A292BC 100%);
-  color: white;
-}
-
-.pokemon-detail-page.type-dragon {
-  background: linear-gradient(135deg, #7038F8 0%, #A27DFA 100%);
-  color: white;
-}
-
-.pokemon-detail-page.type-dark {
-  background: linear-gradient(135deg, #705848 0%, #A29288 100%);
-  color: white;
-}
-
-.pokemon-detail-page.type-steel {
-  background: linear-gradient(135deg, #B8B8D0 0%, #D1D1E0 100%);
-}
-
-.pokemon-detail-page.type-fairy {
-  background: linear-gradient(135deg, #EE99AC 0%, #F4BDC9 100%);
+  padding: 20px;
+  box-sizing: border-box;
+  color: #333;
 }
 
 .pokemon-detail-container {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
+  background: white;
   padding: 40px 30px;
-  max-width: 100%;
-  margin: 0;
-  box-shadow: none;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   border-radius: 20px;
-  margin: 20px;
 }
 
 .pokemon-detail-header {
@@ -509,10 +432,9 @@ h1 {
   justify-content: center;
 }
 
-/* 데스크톱 */
 .pokemon-detail-header img {
-  width: 600px;
-  height: 600px;
+  width: 300px;
+  height: 300px;
 }
 
 .pokemon-detail-info h2 {
@@ -529,12 +451,11 @@ h1 {
 }
 
 .pokemon-detail-stats {
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-top: 1px solid #eee;
   padding-top: 30px;
   max-width: 800px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+  background: white;
   border-radius: 16px;
   padding: 25px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -553,8 +474,7 @@ h1 {
 }
 
 .pokemon-detail-page .ability {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+  background: white;
   border-radius: 16px;
   padding: 25px;
   margin-bottom: 20px;
@@ -602,8 +522,7 @@ h1 {
 .basic-info {
   margin-bottom: 30px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+  background: white;
   border-radius: 16px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
@@ -616,15 +535,15 @@ h1 {
 .tab-buttons {
   display: flex;
   margin-bottom: 25px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  border-bottom: 2px solid #ddd;
   padding-bottom: 0;
-  background: rgba(255, 255, 255, 0.1);
+  background: #f8f9fa;
   border-radius: 15px 15px 0 0;
   padding: 10px 10px 0 10px;
 }
 
 .tab-button {
-  background: rgba(255, 255, 255, 0.2);
+  background: #e9ecef;
   border: none;
   padding: 12px 24px;
   margin-right: 5px;
@@ -633,8 +552,7 @@ h1 {
   font-weight: 500;
   border-radius: 15px 15px 0 0;
   transition: all 0.3s ease;
-  color: white;
-  backdrop-filter: blur(5px);
+  color: #333;
 }
 
 .tab-button:first-child {
@@ -642,13 +560,12 @@ h1 {
 }
 
 .tab-button:hover {
-  background: #e9ecef;
+  background: #dee2e6;
   color: #333;
-  border-color: #ddd;
 }
 
 .tab-button.active {
-  background: rgba(255, 255, 255, 0.9);
+  background: white;
   color: #333;
   font-weight: 600;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -661,12 +578,11 @@ h1 {
   left: 0;
   right: 0;
   height: 2px;
-  background: white;
+  background: #007bff;
 }
 
 .tab-content {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+  background: white;
   border-radius: 0 0 15px 15px;
   padding: 25px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -980,4 +896,82 @@ h1 {
 
 .generation-select {
   background: url('/assets/backgrounds/generation-select.jpg') center/cover no-repeat fixed;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .pokemon-detail-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .pokemon-detail-header img {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .pokemon-detail-info h2 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+  
+  .pokemon-number {
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+  
+  .pokemon-detail-container {
+    padding: 20px;
+    margin: 10px;
+  }
+  
+  .pokemon-detail-page .ability {
+    padding: 20px;
+    margin-bottom: 15px;
+  }
+  
+  .pokemon-detail-page .ability-name {
+    font-size: 1.1rem;
+  }
+  
+  .pokemon-detail-page .ability-description {
+    font-size: 1rem;
+  }
+  
+  .tab-buttons {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  
+  .tab-button {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    margin-right: 1px;
+  }
+  
+  .matchups-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  
+  .matchup-item {
+    padding: 10px 12px;
+  }
+  
+  .attacking-type {
+    font-size: 0.65rem;
+  }
+  
+  .matchups-section {
+    margin-bottom: 30px;
+  }
+}
+
+/* 태블릿 크기 화면 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .pokemon-detail-header img {
+    width: 250px;
+    height: 250px;
+  }
 }
