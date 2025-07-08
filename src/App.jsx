@@ -125,7 +125,34 @@ function PokemonDetail() {
       });
     });
     
-    return matchups.sort((a, b) => b.effectiveness - a.effectiveness);
+    // 같은 효과를 가진 타입들을 그룹화
+    const groupedMatchups = [];
+    const groupedByEffect = {};
+    
+    matchups.forEach(matchup => {
+      const key = `${matchup.attackingType}-${matchup.effectiveness}`;
+      if (!groupedByEffect[key]) {
+        groupedByEffect[key] = {
+          attackingType: matchup.attackingType,
+          effectiveness: matchup.effectiveness,
+          koreanAttackingType: matchup.koreanAttackingType,
+          defendingTypes: []
+        };
+      }
+      groupedByEffect[key].defendingTypes.push(matchup.koreanDefendingType);
+    });
+    
+    // 그룹화된 데이터를 배열로 변환
+    Object.values(groupedByEffect).forEach(group => {
+      groupedMatchups.push({
+        attackingType: group.attackingType,
+        effectiveness: group.effectiveness,
+        koreanAttackingType: group.koreanAttackingType,
+        koreanDefendingTypes: group.defendingTypes.join(', ')
+      });
+    });
+    
+    return groupedMatchups.sort((a, b) => b.effectiveness - a.effectiveness);
   };
 
   const getDefensiveMatchups = () => {
@@ -259,9 +286,9 @@ function PokemonDetail() {
                     {getOffensiveMatchups().map((matchup, index) => (
                       <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'offensive' : matchup.effectiveness < 1 ? 'resistant' : 'normal'}`}>
                         <div className="matchup-info">
-                          <span className="matchup-type">{matchup.koreanDefendingType}</span>
+                          <span className="matchup-type">{matchup.koreanDefendingTypes}</span>
                           {pokemon.types.length > 1 && (
-                            <span className="attacking-type">- {matchup.koreanAttackingType} 타입으로 공격해야 효과가 {matchup.effectiveness > 1 ? '뛰어남' : '반감됨'}</span>
+                            <span className="attacking-type">- {matchup.koreanAttackingType} 타입으로 공격하면 {matchup.effectiveness > 1 ? '효과가 뛰어남' : '효과가 반감됨'}</span>
                           )}
                         </div>
                         <span className="matchup-effectiveness">×{matchup.effectiveness}</span>
