@@ -104,7 +104,7 @@
   
   .pokemon-detail-container {
     padding: 20px;
-    margin: 10px;
+    margin: 0;
   }
   
   .pokemon-detail-page .ability {
@@ -218,7 +218,7 @@
   
   .pokemon-detail-container {
     padding: 20px 15px;
-    margin: 10px;
+    margin: 0;
   }
   
   .pokemon-detail-page .ability {

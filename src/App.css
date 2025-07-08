@@ -416,12 +416,11 @@ h1 {
 }
 
 .pokemon-detail-container {
-  background: white;
   padding: 40px 30px;
-  max-width: 1200px;
-  margin: 0 auto;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  border-radius: 20px;
+  max-width: 100%;
+  margin: 0;
+  box-shadow: none;
+  border-radius: 0;
 }
 
 .pokemon-detail-header {
@@ -571,14 +570,12 @@ h1 {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.tab-button.active::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #007bff;
+.tab-button.active {
+  background: white;
+  color: #333;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-bottom: 2px solid #007bff;
 }
 
 .tab-content {
