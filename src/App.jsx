@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom'
 import './App.css'
 
@@ -248,7 +248,7 @@ function PokemonDetail() {
                 ))}
                 <div className="stat-row stat-total-row">
                   <span className="stat-label">총합:</span>
-                  <span className="stat-value stat-total-value">{pokemon.stats.reduce((sum, stat) => sum + stat.value, 0)}</span>
+                  <span className={`stat-value stat-total-value ${pokemon.types[0]}`}>{pokemon.stats.reduce((sum, stat) => sum + stat.value, 0)}</span>
                 </div>
               </div>
             )}
@@ -302,6 +302,13 @@ function PokemonList() {
   const [selectedTypes, setSelectedTypes] = useState(['all'])
   const [selectedGeneration, setSelectedGeneration] = useState(null)
   const [showDex, setShowDex] = useState(false)
+  // 무한 스크롤 관련 상태
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+  const LIMIT = 30;
+  const observer = useRef();
+  const loaderRef = useRef();
 
   // URL에서 세대 정보를 읽어오기
   useEffect(() => {
@@ -313,43 +320,66 @@ function PokemonList() {
     }
   }, []);
 
-  // 세대/전국도감 선택 시 백엔드 API에서 포켓몬 정보 가져오기
+  // 세대/전국도감 선택 시 상태 초기화
   useEffect(() => {
     if (!selectedGeneration) return;
     setLoading(true);
     setPokemons([]);
-    
-    const apiUrl = import.meta.env.VITE_API_URL;
-    const fetchPokemonsFromBackend = async () => {
-      try {
-        const response = await fetch(`${apiUrl}/api/pokemons?generation=${selectedGeneration}&limit=1025`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch pokemons');
-        }
-        const data = await response.json();
-        setPokemons(data.pokemons);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching pokemons:', err);
-        setError('포켓몬 리스트를 불러오는데 실패했습니다.');
-        setLoading(false);
-      }
-    };
-    
-    fetchPokemonsFromBackend();
+    setOffset(0);
+    setHasMore(true);
+    setIsFetching(false);
   }, [selectedGeneration]);
+
+  // 포켓몬 데이터 fetch 함수
+  const fetchPokemons = useCallback(async () => {
+    if (!selectedGeneration || isFetching || !hasMore) return;
+    setIsFetching(true);
+    const apiUrl = import.meta.env.VITE_API_URL;
+    try {
+      const response = await fetch(`${apiUrl}/api/pokemons?generation=${selectedGeneration}&limit=${LIMIT}&offset=${offset}`);
+      if (!response.ok) throw new Error('Failed to fetch pokemons');
+      const data = await response.json();
+      setPokemons(prev => [...prev, ...data.pokemons]);
+      setHasMore(data.pokemons.length === LIMIT);
+      setOffset(prev => prev + LIMIT);
+      setLoading(false);
+    } catch (err) {
+      setError('포켓몬 리스트를 불러오는데 실패했습니다.');
+      setLoading(false);
+    } finally {
+      setIsFetching(false);
+    }
+  }, [selectedGeneration, offset, isFetching, hasMore]);
+
+  // 최초 및 추가 fetch
+  useEffect(() => {
+    if (!selectedGeneration) return;
+    fetchPokemons();
+    // eslint-disable-next-line
+  }, [selectedGeneration]);
+
+  // 무한 스크롤 IntersectionObserver
+  useEffect(() => {
+    if (isFetching || !hasMore) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new window.IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        fetchPokemons();
+      }
+    });
+    if (loaderRef.current) observer.current.observe(loaderRef.current);
+    return () => observer.current && observer.current.disconnect();
+  }, [fetchPokemons, isFetching, hasMore]);
 
   // 검색/필터 적용
   const filteredPokemons = pokemons.filter(pokemon => {
     const matchesName =
       pokemon.koreanName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       pokemon.name.toLowerCase().includes(searchTerm.toLowerCase());
-    
     // 타입 필터링: 'all'이 선택되었거나, 선택된 모든 타입을 모두 가진 포켓몬만 통과
     const matchesType = 
       selectedTypes.includes('all') || 
       selectedTypes.every(selectedType => pokemon.types.includes(selectedType));
-    
     return matchesName && matchesType;
   });
 
@@ -368,6 +398,9 @@ function PokemonList() {
     setSelectedTypes(['all']);
     setShowDex(true);
     setPokemons([]);
+    setOffset(0);
+    setHasMore(true);
+    setIsFetching(false);
     // URL 업데이트
     navigate(`/?generation=${id}`);
   };
@@ -378,6 +411,9 @@ function PokemonList() {
     setSearchTerm('');
     setSelectedTypes(['all']);
     setPokemons([]);
+    setOffset(0);
+    setHasMore(true);
+    setIsFetching(false);
     navigate('/');
   };
 
@@ -412,7 +448,7 @@ function PokemonList() {
     );
   }
 
-  if (loading) {
+  if (loading && pokemons.length === 0) {
     return (
       <div className={`app generation-${selectedGeneration}`}>
         <button className="back-btn" onClick={handleBackToGeneration}>← 세대 선택으로 돌아가기</button>
@@ -510,7 +546,10 @@ function PokemonList() {
           </div>
         ))}
       </div>
-      {filteredPokemons.length === 0 && (
+      {/* 무한 스크롤 하단 감지용 div */}
+      <div ref={loaderRef} style={{ height: 40 }} />
+      {isFetching && <div className="loading">로딩 중...</div>}
+      {filteredPokemons.length === 0 && !isFetching && (
         <div className="no-results">
           검색 결과가 없습니다.
         </div>

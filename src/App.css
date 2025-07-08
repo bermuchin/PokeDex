@@ -909,6 +909,7 @@ h1 {
   }
   h1 {
     font-size: 1.5rem;
+    margin-top: 50px;
   }
   .pokemon-card {
     padding: 12px;
@@ -989,8 +990,18 @@ h1 {
     font-size: 0.7rem;
   }
   .pokemon-detail-container {
-    padding: 15px;
+    padding: 0;
     margin: 0;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .tab-container {
+    padding: 0;
+    margin: 0;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
   }
   .pokemon-detail-page .ability {
     padding: 12px;
@@ -1144,6 +1155,7 @@ h1 {
     font-size: 0.85rem;
     font-weight: 600;
   }
+  /* 능력치 총합(종족값) 공통 스타일 */
   .stat-total-row {
     margin-top: 16px;
     border-top: 1px solid #eee;
@@ -1153,10 +1165,27 @@ h1 {
     border-radius: 8px;
   }
   .stat-total-value {
-    color: #ffb300;
     font-size: 1.15em;
     margin-left: 8px;
   }
+  .stat-total-value.normal { color: #A8A878; }
+  .stat-total-value.fire { color: #F08030; }
+  .stat-total-value.water { color: #6890F0; }
+  .stat-total-value.electric { color: #F8D030; }
+  .stat-total-value.grass { color: #78C850; }
+  .stat-total-value.ice { color: #98D8D8; }
+  .stat-total-value.fighting { color: #C03028; }
+  .stat-total-value.poison { color: #A040A0; }
+  .stat-total-value.ground { color: #E0C068; }
+  .stat-total-value.flying { color: #A890F0; }
+  .stat-total-value.psychic { color: #F85888; }
+  .stat-total-value.bug { color: #A8B820; }
+  .stat-total-value.rock { color: #B8A038; }
+  .stat-total-value.ghost { color: #705898; }
+  .stat-total-value.dragon { color: #7038F8; }
+  .stat-total-value.dark { color: #705848; }
+  .stat-total-value.steel { color: #B8B8D0; }
+  .stat-total-value.fairy { color: #EE99AC; }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
