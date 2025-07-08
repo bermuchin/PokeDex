@@ -1301,3 +1301,10 @@ h1 {
     font-size: 0.72rem;
   }
 }
+
+.type-buttons-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px 20px;
+  margin-bottom: 10px;
+}
