@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
-const API_BASE_URL = 'http://localhost:3002/api';
+const API_BASE_URL = 'https://pokedex-1ult.onrender.com/api';
 
 const GENERATION_LIST = [
   { id: 'all', label: '전국도감' },
@@ -34,6 +34,8 @@ const getRegionName = (generationId) => {
 };
 
 function App() {
+console.log('API URL:', import.meta.env.VITE_API_URL);
+
   const [pokemons, setPokemons] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -50,9 +52,10 @@ function App() {
     setLoading(true);
     setPokemons([]);
     
+    const apiUrl = import.meta.env.VITE_API_URL;
     const fetchPokemonsFromBackend = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/pokemons?generation=${selectedGeneration}&limit=1025`);
+        const response = await fetch(`${apiUrl}/api/pokemons?generation=${selectedGeneration}&limit=1025`);
         if (!response.ok) {
           throw new Error('Failed to fetch pokemons');
         }
