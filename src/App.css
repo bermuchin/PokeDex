@@ -511,8 +511,8 @@ h1 {
 
 /* 데스크톱 */
 .pokemon-detail-header img {
-  width: 400px;
-  height: 400px;
+  width: 600px;
+  height: 600px;
 }
 
 .pokemon-detail-info h2 {
@@ -586,7 +586,7 @@ h1 {
 .pokemon-detail-page .ability-description {
   color: #666;
   line-height: 1.7;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
 }
 
 .pokemon-detail-page .hidden-badge {
@@ -633,7 +633,7 @@ h1 {
   font-weight: 500;
   border-radius: 15px 15px 0 0;
   transition: all 0.3s ease;
-  color: rgba(255, 255, 255, 0.8);
+  color: white;
   backdrop-filter: blur(5px);
 }
 

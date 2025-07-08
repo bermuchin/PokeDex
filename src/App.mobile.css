@@ -26,6 +26,7 @@
     padding: 12px 15px;
     margin-left: auto;
     margin-right: auto;
+    display: block;
   }
   .pokemon-detail-header {
     flex-direction: column;
@@ -128,6 +129,7 @@
     padding: 10px 12px;
     margin-left: auto;
     margin-right: auto;
+    display: block;
   }
   .pokemon-detail-container {
     padding: 20px 15px;
