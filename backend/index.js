@@ -36,7 +36,7 @@ async function getPokemonDetails(id) {
       id: pokemonData.id,
       name: pokemonData.name,
       koreanName: koreanName,
-      image: pokemonData.sprites.front_default,
+      image: pokemonData.sprites.other['official-artwork'].front_default || pokemonData.sprites.front_default,
       types: pokemonData.types.map(type => type.type.name),
       height: pokemonData.height / 10,
       weight: pokemonData.weight / 10,

@@ -272,7 +272,7 @@ function PokemonDetail() {
                   <h4>방어 시 상성</h4>
                   <div className="matchups-grid">
                     {getDefensiveMatchups().map((matchup, index) => (
-                      <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'weak' : matchup.effectiveness < 1 ? 'resistant' : 'normal'}`}>
+                      <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'weak' : matchup.effectiveness < 1 && matchup.effectiveness > 0 ? 'resistant' : matchup.effectiveness === 0 ? 'immune' : 'normal'}`}>
                         <span className="matchup-type">{matchup.koreanAttackingType}</span>
                         <span className="matchup-effectiveness">×{matchup.effectiveness}</span>
                       </div>

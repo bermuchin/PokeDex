@@ -653,8 +653,8 @@ h1 {
 }
 
 .matchup-item.immune {
-  border-left-color: #6c757d;
-  background: #e9ecef;
+  border-left-color: #495057;
+  background: #dee2e6;
 }
 
 .matchup-type {
@@ -686,7 +686,7 @@ h1 {
 }
 
 .matchup-item.immune .matchup-effectiveness {
-  color: #6c757d;
+  color: #495057;
   font-weight: bold;
 }
 
