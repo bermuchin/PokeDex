@@ -531,13 +531,6 @@ function PokemonList() {
             <label>타입 선택 (최대 2개):</label>
           </div>
           <div className="type-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', justifyContent: 'flex-start' }}>
-            <button
-              key="all"
-              className={`type-button all${selectedTypes.includes('all') ? ' selected' : ''}`}
-              onClick={() => handleTypeButtonClick('all')}
-            >
-              전체
-            </button>
             {typeOptions.slice(1).map(option => (
               <button
                 key={option.value}

@@ -1279,3 +1279,12 @@ h1 {
   min-width: 180px;
   font-size: 0.92rem;
 }
+
+@media (min-width: 769px) {
+  .type-button {
+    font-size: 0.95rem;
+  }
+  .search-input {
+    font-size: 0.95rem;
+  }
+}
