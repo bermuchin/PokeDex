@@ -54,15 +54,17 @@ body, #root {
 .app {
   min-height: 100vh;
   width: 100%;
-  padding: 20px;
+  padding: 10px;
   box-sizing: border-box;
   overflow-x: hidden;
+  background-size: cover;
+  transition: background-size 0.5s cubic-bezier(.4,0,.2,1);
 }
 
 h1 {
   text-align: center;
   color: white;
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 300;
   margin-bottom: 30px;
   text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
@@ -91,6 +93,9 @@ h1 {
 .search-container {
   margin-bottom: 30px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .search-input {
@@ -897,78 +902,276 @@ h1 {
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
+  .pokemon-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 8px 0;
+  }
+  h1 {
+    font-size: 1.5rem;
+  }
+  .pokemon-card {
+    padding: 12px;
+    height: 160px;
+  }
+  .pokemon-card img {
+    width: 120px;
+    height: 120px;
+    bottom: 8px;
+    right: 8px;
+  }
+  .pokemon-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+  .search-input {
+    max-width: 90%;
+    padding: 12px 15px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    text-align: center;
+  }
   .pokemon-detail-header {
     flex-direction: column;
     text-align: center;
     gap: 15px;
+    align-items: center;
+    justify-content: center;
   }
-  
   .pokemon-detail-header img {
     width: 200px;
     height: 200px;
+    margin: 0 auto;
+    display: block;
   }
-  
+  .pokemon-detail-info {
+    text-align: center;
+  }
   .pokemon-detail-info h2 {
     font-size: 1.5rem;
     margin-bottom: 8px;
   }
-  
   .pokemon-number {
     font-size: 1rem;
     margin-bottom: 10px;
   }
-  
+  .modal-content {
+    padding: 15px;
+    margin: 8px;
+  }
+  .pokemon-detail-header .types {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 15px;
+  }
+  .pokemon-detail-header .type {
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  }
+  .type-buttons {
+    gap: 6px;
+  }
+  .type-button {
+    padding: 6px 10px;
+    font-size: 0.7rem;
+  }
+  .types {
+    gap: 4px;
+  }
+  .type {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
   .pokemon-detail-container {
-    padding: 20px;
-    margin: 10px;
+    padding: 15px;
+    margin: 0;
   }
-  
   .pokemon-detail-page .ability {
-    padding: 20px;
-    margin-bottom: 15px;
+    padding: 12px;
+    margin-bottom: 10px;
   }
-  
   .pokemon-detail-page .ability-name {
     font-size: 1.1rem;
   }
-  
   .pokemon-detail-page .ability-description {
     font-size: 1rem;
   }
-  
   .tab-buttons {
     flex-wrap: wrap;
     gap: 2px;
   }
-  
   .tab-button {
     padding: 10px 16px;
     font-size: 0.9rem;
     margin-right: 1px;
   }
-  
   .matchups-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 6px;
   }
-  
   .matchup-item {
     padding: 10px 12px;
   }
-  
   .attacking-type {
     font-size: 0.65rem;
   }
-  
   .matchups-section {
     margin-bottom: 30px;
   }
+  .matchups-content h4 {
+    font-size: 1.1rem;
+  }
+  .matchup-type {
+    font-size: 0.9rem;
+  }
+  .matchup-effectiveness {
+    font-size: 1rem;
+  }
 }
 
-/* 태블릿 크기 화면 */
-@media (min-width: 769px) and (max-width: 1024px) {
+@media (max-width: 480px) {
+  .pokemon-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 5px 0;
+  }
+  .pokemon-card {
+    padding: 8px;
+    height: 140px;
+  }
+  .pokemon-card img {
+    width: 100px;
+    height: 100px;
+    bottom: 6px;
+    right: 6px;
+  }
+  .pokemon-card h3 {
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-size: 1.2rem;
+    padding: 8px 16px;
+  }
+  .type-buttons {
+    gap: 4px;
+  }
+  .type-button {
+    padding: 4px 8px;
+    font-size: 0.6rem;
+  }
+  .types {
+    gap: 3px;
+  }
+  .type {
+    padding: 3px 6px;
+    font-size: 0.6rem;
+  }
+  .search-input {
+    max-width: 85%;
+    padding: 10px 12px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    text-align: center;
+  }
+  .pokemon-detail-container {
+    padding: 12px 10px;
+    margin: 0;
+  }
+  .pokemon-detail-page .ability {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .pokemon-detail-page .ability-name {
+    font-size: 1rem;
+  }
+  .pokemon-detail-page .ability-description {
+    font-size: 0.9rem;
+  }
+  .tab-buttons {
+    gap: 1px;
+  }
+  .tab-button {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    margin-right: 1px;
+  }
+  .matchups-content h4 {
+    font-size: 1.1rem;
+  }
+  .matchup-type {
+    font-size: 0.9rem;
+  }
+  .matchup-effectiveness {
+    font-size: 1rem;
+  }
   .pokemon-detail-header img {
-    width: 250px;
-    height: 250px;
+    width: 180px;
+    height: 180px;
+  }
+  .pokemon-detail-info h2 {
+    font-size: 1.3rem;
+  }
+  .pokemon-detail-stats h3 {
+    font-size: 1.1rem;
+  }
+  .stat-row {
+    gap: 10px;
+  }
+  .stat-label {
+    min-width: 60px;
+    font-size: 0.9rem;
+  }
+  .stat-value {
+    min-width: 30px;
+    font-size: 0.9rem;
+  }
+  .pokemon-detail-header .types {
+    justify-content: center;
+    margin-top: 8px;
+    gap: 8px;
+  }
+  .pokemon-detail-header .type {
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .stat-total-row {
+    margin-top: 16px;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+    font-weight: bold;
+    background: rgba(255,255,255,0.08);
+    border-radius: 8px;
+  }
+  .stat-total-value {
+    color: #ffb300;
+    font-size: 1.15em;
+    margin-left: 8px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .pokemon-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .pokemon-card {
+    height: 180px;
+  }
+  .pokemon-card img {
+    width: 120px;
+    height: 120px;
+  }
+  .pokemon-detail-header img {
+    width: 220px;
+    height: 220px;
   }
 }
