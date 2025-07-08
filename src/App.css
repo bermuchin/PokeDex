@@ -1175,3 +1175,63 @@ h1 {
     background-size: auto 100vh !important;
   }
 }
+
+/* 타입 버튼 컬러 */
+.type-button.normal { background-color: #A8A878; color: #fff; }
+.type-button.fire { background-color: #F08030; color: #fff; }
+.type-button.water { background-color: #6890F0; color: #fff; }
+.type-button.electric { background-color: #F8D030; color: #fff; }
+.type-button.grass { background-color: #78C850; color: #fff; }
+.type-button.ice { background-color: #98D8D8; color: #fff; }
+.type-button.fighting { background-color: #C03028; color: #fff; }
+.type-button.poison { background-color: #A040A0; color: #fff; }
+.type-button.ground { background-color: #E0C068; color: #fff; }
+.type-button.flying { background-color: #A890F0; color: #fff; }
+.type-button.psychic { background-color: #F85888; color: #fff; }
+.type-button.bug { background-color: #A8B820; color: #fff; }
+.type-button.rock { background-color: #B8A038; color: #fff; }
+.type-button.ghost { background-color: #705898; color: #fff; }
+.type-button.dragon { background-color: #7038F8; color: #fff; }
+.type-button.dark { background-color: #705848; color: #fff; }
+.type-button.steel { background-color: #B8B8D0; color: #fff; }
+.type-button.fairy { background-color: #EE99AC; color: #fff; }
+
+/* 타입 뱃지 컬러 */
+.type.normal { background-color: #A8A878; color: #fff; }
+.type.fire { background-color: #F08030; color: #fff; }
+.type.water { background-color: #6890F0; color: #fff; }
+.type.electric { background-color: #F8D030; color: #fff; }
+.type.grass { background-color: #78C850; color: #fff; }
+.type.ice { background-color: #98D8D8; color: #fff; }
+.type.fighting { background-color: #C03028; color: #fff; }
+.type.poison { background-color: #A040A0; color: #fff; }
+.type.ground { background-color: #E0C068; color: #fff; }
+.type.flying { background-color: #A890F0; color: #fff; }
+.type.psychic { background-color: #F85888; color: #fff; }
+.type.bug { background-color: #A8B820; color: #fff; }
+.type.rock { background-color: #B8A038; color: #fff; }
+.type.ghost { background-color: #705898; color: #fff; }
+.type.dragon { background-color: #7038F8; color: #fff; }
+.type.dark { background-color: #705848; color: #fff; }
+.type.steel { background-color: #B8B8D0; color: #fff; }
+.type.fairy { background-color: #EE99AC; color: #fff; }
+
+/* 텍스트만 컬러 (종족값, 상성표 타입명 등) */
+.stat-total-value.normal, .matchup-type.normal { background: none !important; color: #A8A878 !important; }
+.stat-total-value.fire, .matchup-type.fire { background: none !important; color: #F08030 !important; }
+.stat-total-value.water, .matchup-type.water { background: none !important; color: #6890F0 !important; }
+.stat-total-value.electric, .matchup-type.electric { background: none !important; color: #F8D030 !important; }
+.stat-total-value.grass, .matchup-type.grass { background: none !important; color: #78C850 !important; }
+.stat-total-value.ice, .matchup-type.ice { background: none !important; color: #98D8D8 !important; }
+.stat-total-value.fighting, .matchup-type.fighting { background: none !important; color: #C03028 !important; }
+.stat-total-value.poison, .matchup-type.poison { background: none !important; color: #A040A0 !important; }
+.stat-total-value.ground, .matchup-type.ground { background: none !important; color: #E0C068 !important; }
+.stat-total-value.flying, .matchup-type.flying { background: none !important; color: #A890F0 !important; }
+.stat-total-value.psychic, .matchup-type.psychic { background: none !important; color: #F85888 !important; }
+.stat-total-value.bug, .matchup-type.bug { background: none !important; color: #A8B820 !important; }
+.stat-total-value.rock, .matchup-type.rock { background: none !important; color: #B8A038 !important; }
+.stat-total-value.ghost, .matchup-type.ghost { background: none !important; color: #705898 !important; }
+.stat-total-value.dragon, .matchup-type.dragon { background: none !important; color: #7038F8 !important; }
+.stat-total-value.dark, .matchup-type.dark { background: none !important; color: #705848 !important; }
+.stat-total-value.steel, .matchup-type.steel { background: none !important; color: #B8B8D0 !important; }
+.stat-total-value.fairy, .matchup-type.fairy { background: none !important; color: #EE99AC !important; }
