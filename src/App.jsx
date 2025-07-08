@@ -113,15 +113,7 @@ function PokemonDetail() {
     
     const matchups = [];
     
-    // 한국어 타입명을 미리 계산
-    const koreanTypeNames = {};
-    pokemon.types.forEach(type => {
-      koreanTypeNames[type] = getKoreanTypeName(type);
-    });
-    
     pokemon.types.forEach(attackingType => {
-      const koreanAttackingType = koreanTypeNames[attackingType];
-      
       ALL_TYPES.forEach(defendingType => {
         const effectiveness = getTypeEffectiveness(attackingType, [defendingType]);
         if (effectiveness !== 1) {
@@ -129,38 +121,14 @@ function PokemonDetail() {
             attackingType,
             defendingType,
             effectiveness,
-            koreanAttackingType,
+            koreanAttackingType: getKoreanTypeName(attackingType),
             koreanDefendingType: getKoreanTypeName(defendingType)
           });
         }
       });
     });
     
-    // 같은 공격 타입과 효과를 가진 방어 타입들을 그룹화
-    const groupedByAttack = {};
-    
-    matchups.forEach(matchup => {
-      const key = `${matchup.attackingType}-${matchup.effectiveness}`;
-      if (!groupedByAttack[key]) {
-        groupedByAttack[key] = {
-          attackingType: matchup.attackingType,
-          effectiveness: matchup.effectiveness,
-          koreanAttackingType: matchup.koreanAttackingType,
-          defendingTypes: []
-        };
-      }
-      groupedByAttack[key].defendingTypes.push(matchup.koreanDefendingType);
-    });
-    
-    // 그룹화된 데이터를 배열로 변환하고 정렬
-    return Object.values(groupedByAttack)
-      .map(group => ({
-        attackingType: group.attackingType,
-        effectiveness: group.effectiveness,
-        koreanAttackingType: group.koreanAttackingType,
-        koreanDefendingTypes: group.defendingTypes.join(', ')
-      }))
-      .sort((a, b) => b.effectiveness - a.effectiveness);
+    return matchups.sort((a, b) => b.effectiveness - a.effectiveness);
   };
 
   const getDefensiveMatchups = () => {
@@ -289,7 +257,7 @@ function PokemonDetail() {
                     {getOffensiveMatchups().map((matchup, index) => (
                       <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'offensive' : matchup.effectiveness < 1 ? 'resistant' : 'normal'}`}>
                         <div className="matchup-info">
-                          <span className="matchup-type">{matchup.koreanDefendingTypes}</span>
+                          <span className="matchup-type">{matchup.koreanDefendingType}</span>
                           {pokemon.types.length > 1 && (
                             <span className="attacking-type">- {matchup.koreanAttackingType} 타입으로 공격하면 {matchup.effectiveness > 1 ? '효과가 뛰어남' : '효과가 반감됨'}</span>
                           )}
