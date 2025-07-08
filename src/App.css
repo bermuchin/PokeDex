@@ -392,24 +392,24 @@ h1 {
 }
 
 /* 포켓몬 타입별 색상 */
-.normal { color: #A8A878 !important; background: none !important; }
-.fire { color: #F08030 !important; background: none !important; }
-.water { color: #6890F0 !important; background: none !important; }
-.electric { color: #F8D030 !important; background: none !important; }
-.grass { color: #78C850 !important; background: none !important; }
-.ice { color: #98D8D8 !important; background: none !important; }
-.fighting { color: #C03028 !important; background: none !important; }
-.poison { color: #A040A0 !important; background: none !important; }
-.ground { color: #E0C068 !important; background: none !important; }
-.flying { color: #A890F0 !important; background: none !important; }
-.psychic { color: #F85888 !important; background: none !important; }
-.bug { color: #A8B820 !important; background: none !important; }
-.rock { color: #B8A038 !important; background: none !important; }
-.ghost { color: #705898 !important; background: none !important; }
-.dragon { color: #7038F8 !important; background: none !important; }
-.dark { color: #705848 !important; background: none !important; }
-.steel { color: #B8B8D0 !important; background: none !important; }
-.fairy { color: #EE99AC !important; background: none !important; }
+.normal { color: #A8A878 !important; }
+.fire { color: #F08030 !important; }
+.water { color: #6890F0 !important; }
+.electric { color: #F8D030 !important; }
+.grass { color: #78C850 !important; }
+.ice { color: #98D8D8 !important; }
+.fighting { color: #C03028 !important; }
+.poison { color: #A040A0 !important; }
+.ground { color: #E0C068 !important; }
+.flying { color: #A890F0 !important; }
+.psychic { color: #F85888 !important; }
+.bug { color: #A8B820 !important; }
+.rock { color: #B8A038 !important; }
+.ghost { color: #705898 !important; }
+.dragon { color: #7038F8 !important; }
+.dark { color: #705848 !important; }
+.steel { color: #B8B8D0 !important; }
+.fairy { color: #EE99AC !important; }
 
 /* 모달 스타일 */
 /* 포켓몬 상세 페이지 스타일 */
