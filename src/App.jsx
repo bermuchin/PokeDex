@@ -43,9 +43,7 @@ function PokemonDetail() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('abilities');
   // Habitat tab state
-  const [habitats, setHabitats] = useState([]);
-  const [habitatLoading, setHabitatLoading] = useState(false);
-  const [habitatError, setHabitatError] = useState(null);
+
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -68,35 +66,15 @@ function PokemonDetail() {
     fetchPokemon();
   }, [id]);
 
-  // Fetch habitat/location_area_encounters when tab is selected
-  useEffect(() => {
-    if (activeTab !== 'habitat' || !pokemon) return;
-    const fetchHabitats = async () => {
-      setHabitatLoading(true);
-      setHabitatError(null);
-      setHabitats([]);
-      try {
-        // PokéAPI의 location_area_encounters 사용
-        const pokeApiId = pokemon.id; // Assume id matches PokéAPI
-        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokeApiId}/encounters`);
-        if (!res.ok) throw new Error('서식지 정보를 불러오지 못했습니다.');
-        const data = await res.json();
-        setHabitats(data);
-      } catch (err) {
-        setHabitatError('서식지 정보를 불러오지 못했습니다.');
-      } finally {
-        setHabitatLoading(false);
-      }
-    };
-    fetchHabitats();
-  }, [activeTab, pokemon]);
+
 
   const handleBack = () => {
     // URL에서 세대 정보와 스크롤 위치를 가져오거나, 기본값으로 'all' 사용
     const searchParams = new URLSearchParams(window.location.search);
     const generation = searchParams.get('generation') || 'all';
     const scrollPosition = searchParams.get('scroll') || '0';
-    navigate(`/?generation=${generation}&scroll=${scrollPosition}`);
+    const pokemonId = searchParams.get('pokemonId') || '';
+    navigate(`/?generation=${generation}&scroll=${scrollPosition}&pokemonId=${pokemonId}`);
   };
 
   // 상성 정보 계산
@@ -197,7 +175,13 @@ function PokemonDetail() {
         <div className="pokemon-detail-header">
           <button 
             className="nav-btn prev-btn" 
-            onClick={() => navigate(`/pokemon/${pokemon.id - 1}?generation=${new URLSearchParams(window.location.search).get('generation') || 'all'}&scroll=${new URLSearchParams(window.location.search).get('scroll') || '0'}`)}
+            onClick={() => {
+              const searchParams = new URLSearchParams(window.location.search);
+              const generation = searchParams.get('generation') || 'all';
+              const scroll = searchParams.get('scroll') || '0';
+              const pokemonId = searchParams.get('pokemonId') || '';
+              navigate(`/pokemon/${pokemon.id - 1}?generation=${generation}&scroll=${scroll}&pokemonId=${pokemonId}`);
+            }}
             disabled={pokemon.id <= 1}
           >
             ←
@@ -205,7 +189,13 @@ function PokemonDetail() {
           <img src={pokemon.image} alt={pokemon.koreanName} />
           <button 
             className="nav-btn next-btn" 
-            onClick={() => navigate(`/pokemon/${pokemon.id + 1}?generation=${new URLSearchParams(window.location.search).get('generation') || 'all'}&scroll=${new URLSearchParams(window.location.search).get('scroll') || '0'}`)}
+            onClick={() => {
+              const searchParams = new URLSearchParams(window.location.search);
+              const generation = searchParams.get('generation') || 'all';
+              const scroll = searchParams.get('scroll') || '0';
+              const pokemonId = searchParams.get('pokemonId') || '';
+              navigate(`/pokemon/${pokemon.id + 1}?generation=${generation}&scroll=${scroll}&pokemonId=${pokemonId}`);
+            }}
             disabled={pokemon.id >= 1025}
           >
             →
@@ -386,12 +376,27 @@ function PokemonList() {
   // 컴포넌트가 마운트되고 포켓몬 데이터가 로드된 후 저장된 스크롤 위치로 복원
   useEffect(() => {
     if (scrollPosition > 0 && !loading && pokemons.length > 0 && !isScrollRestored) {
+      // URL에서 포켓몬 ID를 가져와서 해당 포켓몬이 로드되었는지 확인
+      const searchParams = new URLSearchParams(window.location.search);
+      const pokemonIdFromUrl = searchParams.get('pokemonId');
+      
+      if (pokemonIdFromUrl) {
+        const targetPokemonId = parseInt(pokemonIdFromUrl);
+        const pokemonExists = pokemons.some(p => p.id === targetPokemonId);
+        
+        // 해당 포켓몬이 로드되지 않았으면 스크롤 복원을 포기하고 맨 위로 이동
+        if (!pokemonExists) {
+          setIsScrollRestored(true);
+          return;
+        }
+      }
+      
       setTimeout(() => {
         window.scrollTo(0, scrollPosition);
         setIsScrollRestored(true);
       }, 100);
     }
-  }, [scrollPosition, loading, pokemons.length, isScrollRestored]);
+  }, [scrollPosition, loading, pokemons.length, isScrollRestored, pokemons]);
 
   // 세대/전국도감 선택 시 상태 초기화
   useEffect(() => {
@@ -434,7 +439,6 @@ function PokemonList() {
   useEffect(() => {
     if (!selectedGeneration) return;
     fetchPokemons();
-    // eslint-disable-next-line
   }, [selectedGeneration]);
 
   // 무한 스크롤 IntersectionObserver
@@ -447,6 +451,8 @@ function PokemonList() {
       if (entries[0].isIntersecting && !isFetching && hasMore) {
         fetchPokemons();
       }
+    }, {
+      rootMargin: '100px' // 100px 전에 미리 로딩 시작
     });
     if (loaderRef.current) observer.current.observe(loaderRef.current);
     return () => observer.current && observer.current.disconnect();
@@ -465,8 +471,8 @@ function PokemonList() {
   });
 
   const handlePokemonClick = (pokemon) => {
-    // 현재 스크롤 위치를 URL에 저장
-    navigate(`/pokemon/${pokemon.id}?generation=${selectedGeneration}&scroll=${window.scrollY}`);
+    // 현재 스크롤 위치와 포켓몬 ID를 URL에 저장
+    navigate(`/pokemon/${pokemon.id}?generation=${selectedGeneration}&scroll=${window.scrollY}&pokemonId=${pokemon.id}`);
   };
 
   const resetFilters = () => {
