@@ -62,6 +62,15 @@ body, #root {
   transition: background-size 0.5s cubic-bezier(.4,0,.2,1);
 }
 
+/* 세대 선택 화면에서 스크롤 고정 */
+.generation-select-screen {
+  overflow: hidden !important;
+  height: 100vh !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
 h1 {
   text-align: center;
   color: white;
@@ -101,7 +110,7 @@ h1 {
 
 .search-input {
   width: 100%;
-  max-width: 400px;
+  max-width: 600px;
   padding: 12px 24px;
   font-size: 1rem;
   border-radius: 25px;
@@ -113,6 +122,7 @@ h1 {
   margin-right: auto;
   display: block;
   box-sizing: border-box;
+  text-align: center;
 }
 
 .search-input:focus {
@@ -443,8 +453,8 @@ h1 {
 }
 
 .pokemon-detail-header img {
-  width: 300px;
-  height: 300px;
+  width: 600px;
+  height: 600px;
 }
 
 .pokemon-detail-info h2 {
@@ -821,12 +831,12 @@ h1 {
   padding: 10px 18px;
   border: none;
   border-radius: 20px;
-  background: #fff;
-  color: #5a4fcf;
-  font-weight: 400;
+  background: rgba(255, 255, 255, 0.7);
+  color: #000;
+  font-weight: 500;
   font-size: 1rem;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
@@ -883,6 +893,11 @@ h1 {
 
 .generation-select {
   background: url('/assets/backgrounds/generation-select.jpg') center/cover no-repeat fixed;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  height: 100vh !important;
+  overflow: hidden !important;
 }
 
 /* 반응형 디자인 */
@@ -930,8 +945,8 @@ h1 {
     justify-content: center;
   }
   .pokemon-detail-header img {
-    width: 200px;
-    height: 200px;
+    width: 400px;
+    height: 400px;
     margin: 0 auto;
     display: block;
   }
@@ -1127,8 +1142,8 @@ h1 {
     font-size: 1rem;
   }
   .pokemon-detail-header img {
-    width: 180px;
-    height: 180px;
+    width: 360px;
+    height: 360px;
   }
   .pokemon-detail-info h2 {
     font-size: 1.3rem;
@@ -1188,8 +1203,8 @@ h1 {
     height: 120px;
   }
   .pokemon-detail-header img {
-    width: 220px;
-    height: 220px;
+    width: 440px;
+    height: 440px;
   }
 }
 
@@ -1199,6 +1214,11 @@ h1 {
   }
   .generation-select-screen {
     min-height: auto;
+    overflow: hidden !important;
+    height: 100vh !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
   }
 }
 
@@ -1282,7 +1302,7 @@ h1 {
 
 @media (min-width: 769px) {
   .type-button {
-    font-size: 0.65rem;
+    font-size: 0.8rem;
   }
   .search-input {
     font-size: 0.8rem;
