@@ -41,6 +41,9 @@ function PokemonDetail() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('abilities');
   const [selectedForm, setSelectedForm] = useState('default'); // 선택된 폼 상태 추가
+  const [habitats, setHabitats] = useState(null);
+  const [habitatLoading, setHabitatLoading] = useState(false);
+  const [habitatError, setHabitatError] = useState(null);
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -60,6 +63,28 @@ function PokemonDetail() {
     };
     fetchPokemon();
   }, [id]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
+  // 서식지 탭 클릭 시 fetch
+  useEffect(() => {
+    if (activeTab === 'habitat' && !habitats && !habitatLoading) {
+      setHabitatLoading(true);
+      setHabitatError(null);
+      fetch(`${API_BASE_URL}/api/pokemons/${id}/habitats`)
+        .then(res => res.json())
+        .then(data => {
+          setHabitats(data.habitats);
+          setHabitatLoading(false);
+        })
+        .catch(() => {
+          setHabitatError('서식지 정보를 불러오지 못했습니다.');
+          setHabitatLoading(false);
+        });
+    }
+  }, [activeTab, id, habitats, habitatLoading]);
 
   // 현재 선택된 폼의 데이터 가져오기
   const getCurrentFormData = () => {
@@ -272,7 +297,12 @@ function PokemonDetail() {
             >
               배틀 상성
             </button>
-            {/* 서식지 탭 제거 */}
+            <button 
+              className={`tab-button ${activeTab === 'habitat' ? 'active' : ''}`}
+              onClick={() => setActiveTab('habitat')}
+            >
+              서식지
+            </button>
           </div>
           
           <div className="tab-content">
@@ -343,7 +373,30 @@ function PokemonDetail() {
                 </div>
               </div>
             )}
-            {/* 서식지 탭 제거 */}
+            {activeTab === 'habitat' && (
+              <div className="habitat-content">
+                {habitatLoading && <div>로딩 중...</div>}
+                {habitatError && <div className="error">{habitatError}</div>}
+                {!habitatLoading && !habitatError && habitats && (
+                  Object.keys(habitats).length === 0 ? (
+                    <div>서식지 정보가 없습니다.</div>
+                  ) : (
+                    <div>
+                      {Object.entries(habitats).map(([version, areas]) => (
+                        <div key={version} className="habitat-version-block">
+                          <h4>{version}</h4>
+                          <ul>
+                            {areas.map((area, idx) => (
+                              <li key={idx}>{area.location_area.replace(/-/g, ' ')}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

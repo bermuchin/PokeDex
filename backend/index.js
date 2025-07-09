@@ -782,6 +782,41 @@ function getAbilityDescription(abilityName) {
   return descriptions[abilityName] || '특성 설명이 없습니다.';
 }
 
+// 포켓몬 서식지(작품별/세대별) 정보 API
+app.get('/api/pokemons/:id/habitats', async (req, res) => {
+  const { id } = req.params;
+  try {
+    // PokeAPI에서 encounter 정보를 가져옴
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}/encounters`);
+    if (!response.ok) {
+      return res.status(404).json({ error: 'No habitat data found' });
+    }
+    const data = await response.json();
+    // encounter data는 버전별로 배열이 나옴
+    // [{ location_area: {name, url}, version_details: [{version, max_chance, encounter_details: [...]}, ...] }, ...]
+    // 버전별로 서식지 이름을 정리
+    const habitatsByVersion = {};
+    data.forEach(encounter => {
+      encounter.version_details.forEach(vd => {
+        const version = vd.version.name;
+        if (!habitatsByVersion[version]) habitatsByVersion[version] = [];
+        habitatsByVersion[version].push({
+          location_area: encounter.location_area.name,
+          location_area_url: encounter.location_area.url,
+          max_chance: vd.max_chance
+        });
+      });
+    });
+    res.json({
+      id,
+      habitats: habitatsByVersion
+    });
+  } catch (error) {
+    console.error('Error fetching habitat info:', error);
+    res.status(500).json({ error: 'Failed to fetch habitat info' });
+  }
+});
+
 // 서버 시작
 app.listen(PORT, () => {
   console.log(`🚀 Pokemon API Server running on http://localhost:${PORT}`);
