@@ -40,6 +40,7 @@ function PokemonDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('abilities');
+  const [selectedForm, setSelectedForm] = useState('default'); // 선택된 폼 상태 추가
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -59,6 +60,20 @@ function PokemonDetail() {
     };
     fetchPokemon();
   }, [id]);
+
+  // 현재 선택된 폼의 데이터 가져오기
+  const getCurrentFormData = () => {
+    if (!pokemon) return null;
+    
+    if (selectedForm === 'default') {
+      return pokemon;
+    }
+    
+    const form = pokemon.forms?.find(f => f.name === selectedForm);
+    return form || pokemon;
+  };
+
+  const currentFormData = getCurrentFormData();
 
   const handleBack = () => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -103,11 +118,11 @@ function PokemonDetail() {
   const ALL_TYPES = ['normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'];
 
   const getOffensiveMatchups = () => {
-    if (!pokemon) return [];
+    if (!currentFormData) return [];
     
     const matchups = [];
     
-    pokemon.types.forEach(attackingType => {
+    currentFormData.types.forEach(attackingType => {
       ALL_TYPES.forEach(defendingType => {
         const effectiveness = getTypeEffectiveness(attackingType, [defendingType]);
         if (effectiveness !== 1) {
@@ -126,14 +141,14 @@ function PokemonDetail() {
   };
 
   const getDefensiveMatchups = () => {
-    if (!pokemon) return [];
+    if (!currentFormData) return [];
     
     // 한국어 타입명을 미리 계산
-    const koreanDefendingTypes = pokemon.types.map(type => getKoreanTypeName(type)).join(', ');
+    const koreanDefendingTypes = currentFormData.types.map(type => getKoreanTypeName(type)).join(', ');
     
     return ALL_TYPES.map(attackingType => ({
       attackingType,
-      effectiveness: getTypeEffectiveness(attackingType, pokemon.types),
+      effectiveness: getTypeEffectiveness(attackingType, currentFormData.types),
       koreanAttackingType: getKoreanTypeName(attackingType),
       koreanDefendingType: koreanDefendingTypes
     })).sort((a, b) => b.effectiveness - a.effectiveness);
@@ -174,7 +189,7 @@ function PokemonDetail() {
           >
             ←
           </button>
-          <img src={pokemon.image} alt={pokemon.koreanName} />
+          <img src={currentFormData.image} alt={currentFormData.koreanName} />
           <button 
             className="nav-btn next-btn" 
             onClick={() => {
@@ -188,10 +203,10 @@ function PokemonDetail() {
             →
           </button>
           <div className="pokemon-detail-info">
-            <h2>{pokemon.koreanName}</h2>
+            <h2>{currentFormData.koreanName}</h2>
             <p className="pokemon-number">#{pokemon.id.toString().padStart(3, '0')}</p>
             <div className="types">
-              {pokemon.types.map((type) => (
+              {currentFormData.types.map((type) => (
                 <span key={type} className={`type ${type}`}>
                   {getKoreanTypeName(type)}
                 </span>
@@ -200,15 +215,39 @@ function PokemonDetail() {
           </div>
         </div>
         
+        {/* 폼 선택 UI */}
+        {pokemon.forms && pokemon.forms.length > 0 && (
+          <div className="form-selector">
+            <h3>폼 선택</h3>
+            <div className="form-buttons">
+              <button 
+                className={`form-button ${selectedForm === 'default' ? 'selected' : ''}`}
+                onClick={() => setSelectedForm('default')}
+              >
+                기본폼
+              </button>
+              {pokemon.forms.map((form) => (
+                <button
+                  key={form.name}
+                  className={`form-button ${selectedForm === form.name ? 'selected' : ''}`}
+                  onClick={() => setSelectedForm(form.name)}
+                >
+                  {form.koreanName}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        
         {/* 기본 정보 */}
         <div className="basic-info">
           <div className="stat-row">
             <span className="stat-label">키:</span>
-            <span className="stat-value">{pokemon.height}m</span>
+            <span className="stat-value">{currentFormData.height}m</span>
           </div>
           <div className="stat-row">
             <span className="stat-label">몸무게:</span>
-            <span className="stat-value">{pokemon.weight}kg</span>
+            <span className="stat-value">{currentFormData.weight}kg</span>
           </div>
         </div>
 
@@ -239,7 +278,7 @@ function PokemonDetail() {
           <div className="tab-content">
             {activeTab === 'abilities' && (
               <div className="abilities">
-                {pokemon.abilities.map((ability, index) => (
+                {currentFormData.abilities.map((ability, index) => (
                   <div key={index} className={`ability ${ability.isHidden ? 'hidden' : 'normal'}`}>
                     <div className="ability-header">
                       <span className="ability-name">{getKoreanAbilityName(ability.name)}</span>
@@ -253,13 +292,13 @@ function PokemonDetail() {
             
             {activeTab === 'stats' && (
               <div className="stats-content">
-                {pokemon.stats.map((stat) => (
+                {currentFormData.stats.map((stat) => (
                   <div key={stat.name} className="stat-row">
                     <span className="stat-label">{getKoreanStatName(stat.name)}:</span>
                     <span className="stat-value">{stat.value}</span>
                     <div className="stat-bar">
                       <div
-                        className={`stat-bar-fill ${pokemon.types[0]}`}
+                        className={`stat-bar-fill ${currentFormData.types[0]}`}
                         style={{ width: `${(stat.value / 255) * 100}%` }}
                       ></div>
                     </div>
@@ -267,7 +306,7 @@ function PokemonDetail() {
                 ))}
                 <div className="stat-row stat-total-row">
                   <span className="stat-label">종족값:</span>
-                  <span className={`stat-value stat-total-value ${pokemon.types[0]}`}>{pokemon.stats.reduce((sum, stat) => sum + stat.value, 0)}</span>
+                  <span className={`stat-value stat-total-value ${currentFormData.types[0]}`}>{currentFormData.stats.reduce((sum, stat) => sum + stat.value, 0)}</span>
                 </div>
               </div>
             )}
@@ -281,7 +320,7 @@ function PokemonDetail() {
                       <div key={index} className={`matchup-item ${matchup.effectiveness > 1 ? 'offensive' : matchup.effectiveness < 1 && matchup.effectiveness > 0 ? 'weak' : matchup.effectiveness === 0 ? 'immune' : 'normal'}`}>
                         <div className="matchup-info">
                           <span className={`matchup-type type-${matchup.defendingType}`}>{matchup.koreanDefendingType}</span>
-                          {pokemon.types.length > 1 && (
+                          {currentFormData.types.length > 1 && (
                             <span className="attacking-type">{matchup.koreanAttackingType} 타입으로 공격:</span>
                           )}
                         </div>
@@ -753,6 +792,7 @@ function getKoreanAbilityName(ability) {
     'blaze': '맹화',
     'torrent': '급류',
     'swarm': '벌레의 알림',
+    'swarm-change': '스웜체인지',
     'rock-head': '돌머리',
     'drought': '가뭄',
     'arena-trap': '개미지옥',

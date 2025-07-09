@@ -32,6 +32,72 @@ async function getPokemonDetails(id) {
 
     const koreanName = speciesData.names.find(name => name.language.name === 'ko')?.name || pokemonData.name;
 
+    // 폼 정보 가져오기
+    const forms = [];
+    if (speciesData.varieties && speciesData.varieties.length > 1) {
+      for (const variety of speciesData.varieties) {
+        if (variety.is_default) continue;
+        const formName = variety.pokemon.name.split('-').slice(1).join('-') || 'default';
+        // 지가르데(718) 폼 필터링: 10, 50, complete만 허용
+        if (pokemonData.id === 718 && !['10', '50', 'complete'].includes(formName)) continue;
+        try {
+          const formResponse = await fetch(variety.pokemon.url);
+          const formData = await formResponse.json();
+          const koreanFormName = getKoreanFormName(formName, pokemonData.id);
+
+          // 지가르데(718) 폼별 특성 처리
+          let abilities = formData.abilities.map(ability => ({
+            name: ability.ability.name,
+            isHidden: ability.is_hidden,
+            slot: ability.slot,
+            description: getAbilityDescription(ability.ability.name)
+          }));
+
+          if (pokemonData.id === 718) {
+            if (['10', '50'].includes(formName)) {
+              const names = abilities.map(a => a.name);
+              if (!names.includes('aura-break')) {
+                abilities.push({
+                  name: 'aura-break',
+                  isHidden: false,
+                  slot: abilities.length + 1,
+                  description: getAbilityDescription('aura-break')
+                });
+              }
+              if (!names.includes('power-construct')) {
+                abilities.push({
+                  name: 'power-construct',
+                  isHidden: false,
+                  slot: abilities.length + 1,
+                  description: getAbilityDescription('power-construct')
+                });
+              }
+              abilities = abilities.filter(a => a.name === 'aura-break' || a.name === 'power-construct');
+            }
+            if (['100', 'complete'].includes(formName)) {
+              abilities = abilities.filter(a => a.name === 'power-construct');
+            }
+          }
+
+          forms.push({
+            name: formName,
+            koreanName: koreanFormName,
+            image: formData.sprites.other['official-artwork'].front_default || formData.sprites.front_default,
+            types: formData.types.map(type => type.type.name),
+            height: formData.height / 10,
+            weight: formData.weight / 10,
+            abilities: abilities,
+            stats: formData.stats.map(stat => ({
+              name: stat.stat.name,
+              value: stat.base_stat
+            }))
+          });
+        } catch (error) {
+          console.error(`Error fetching form ${formName}:`, error);
+        }
+      }
+    }
+
     const pokemonInfo = {
       id: pokemonData.id,
       name: pokemonData.name,
@@ -49,7 +115,8 @@ async function getPokemonDetails(id) {
       stats: pokemonData.stats.map(stat => ({
         name: stat.stat.name,
         value: stat.base_stat
-      }))
+      })),
+      forms: forms // 폼 정보 추가
     };
 
     // 캐시에 저장 (30분간 유효)
@@ -97,6 +164,126 @@ async function getGenerationPokemons(generation) {
     console.error(`Error fetching generation ${generation}:`, error);
     throw error;
   }
+}
+
+function getKoreanFormName(formName, pokemonId = null) {
+  const formNames = {
+    'mega': '메가진화',
+    'mega-x': '메가진화 X',
+    'mega-y': '메가진화 Y',
+    'alola': '알로라폼',
+    'galar': '가라르폼',
+    'hisui': '히스이폼',
+    'paldea': '팔데아폼',
+    'gmax': '거다이맥스',         // 'gmax'만 남기고 'gigantamax'는 아래에
+    'gigantamax': '거다이맥스',   // 혹시 PokeAPI에서 둘 다 쓸 수 있으니 남겨둠
+    'therian': '영물폼',
+    'incarnate': '화신폼',
+    'land': '랜드폼',
+    'sky': '스카이폼',
+    'ash': '지우폼',
+    'belle': '벨폼',
+    'libre': '리브레폼',
+    'phd': '박사폼',
+    'pop-star': '팝스타폼',
+    'rock-star': '락스타폼',
+    'cosplay': '코스프레폼',
+    'original': '오리지널폼',
+    'attack': '어택폼',
+    'defense': '디펜스폼',
+    'speed': '스피드폼',
+    'plant': '플랜트폼',
+    'sandy': '샌디폼',
+    'trash': '트래시폼',
+    'red': '레드폼',
+    'blue': '블루폼',
+    'white': '화이트폼',
+    'zen': '달마모드',
+    'standard': '스탠다드폼',
+    'resolute': '리졸루트폼',
+    'pirouette': '피루엣폼',
+    'aria': '아리아폼',
+    'step': '스텝폼',
+    'baile': '바일폼',
+    'pom-pom': '폼폼폼',
+    'pa\'u': '파우폼',
+    'sensu': '센스폼',
+    'midnight': '한밤중의 모습',
+    'dawn': '새벽의 날개',
+    'ultra': '울트라폼',
+    'eternal': '이터널폼',
+    'unbound': '언바운드폼',
+    'complete': '컴플리트폼',
+    '10': '10%폼',
+    '50': '50%폼',
+    '100': '퍼펙트폼',
+    'complete': '퍼펙트폼',
+    'full': '풀폼',
+    'small': '스몰폼',
+    'large': '라지폼',
+    'super': '슈퍼폼',
+    'ordinary': '오디너리폼',
+    'blade': '블레이드폼',
+    'shield': '실드폼',
+    'sun': '선폼',
+    'moon': '문폼',
+    'rainy': '레인니폼',
+    'snowy': '스노위폼',
+    'sunny': '선니폼',
+    'overcast': '오버캐스트폼',
+    'thunder': '썬더폼',
+    'fog': '포그폼',
+    'windy': '윈디폼',
+    'leaves': '리브스폼',
+    'fan': '팬폼',
+    'frost': '프로스트폼',
+    'heat': '히트폼',
+    'mow': '모우폼',
+    'wash': '워시폼',
+    'cherry': '체리폼',
+    'vanilla': '바닐라폼',
+    'mint': '민트폼',
+    'lemon': '레몬폼',
+    'salted': '솔티드폼',
+    'ruby': '루비폼',
+    'sapphire': '사파이어폼',
+    'emerald': '에메랄드폼',
+    'amethyst': '아메시스트폼',
+    'diamond': '다이아몬드폼',
+    'pearl': '펄폼',
+    'star': '스타폼',
+    'heart': '하트폼',
+    'spring': '스프링폼',
+    'summer': '섬머폼',
+    'autumn': '오텀폼',
+    'winter': '윈터폼',
+    'male': '수컷',
+    'female': '암컷',
+    'rapid-strike': '연격의 태세',
+    'single-strike': '일격의 태세',
+    'primal': '원시폼',
+    'origin': '오리진폼',
+    'galar-standard': '가라르 불비달마',
+    'galar-zen': '가라르 달마모드',
+    'default': '기본폼'
+  };
+  // 특정 포켓몬의 특수 폼 처리
+  if (pokemonId) {
+    if (formName === 'dusk' && pokemonId === 745) {
+      return '황혼의 모습';
+    }
+    if (formName === 'dusk' && pokemonId === 800) {
+      return '황혼의 갈기';
+    }
+    // 지가르데 폼 처리
+    if (pokemonId === 718) {
+      if (formName === '10') return '10%폼';
+      if (formName === '50') return '50%폼';
+      if (formName === '100' || formName === 'complete') return '퍼펙트폼';
+    }
+  }
+  
+  return formNames[formName] || formName;
 }
 
 // 루트 경로
@@ -499,8 +686,8 @@ function getAbilityDescription(abilityName) {
     'psychic-surge': '배틀 시작 시 사이킥필드를 만든다.',
     'grassy-surge': '배틀 시작 시 그래스필드를 만든다.',
     'misty-surge': '배틀 시작 시 미스트필드를 만든다.',
-    'intrepid-sword': '상대를 기절시키면 공격이 올라간다.',
-    'dauntless-shield': '상대를 기절시키면 방어가 올라간다.',
+    'intrepid-sword': '등장하자마자자 공격이 올라간다.',
+    'dauntless-shield': '등장하자마자 방어가 올라간다.',
     'libero': '기술을 사용할 때 자신의 타입이 그 기술의 타입이 된다.',
     'ball-fetch': '포켓볼을 사용하면 다시 가질 수 있다.',
     'cotton-down': '공격을 받으면 상대의 스피드를 떨어뜨린다.',
