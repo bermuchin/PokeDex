@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom'
 import './App.css'
 
@@ -17,7 +17,6 @@ const GENERATION_LIST = [
   { id: 9, label: '9세대(팔데아)' },
 ]
 
-// 세대별 지방 이름 매핑
 const getRegionName = (generationId) => {
   const regionNames = {
     'all': '범박사의 포켓몬 도감',
@@ -34,7 +33,6 @@ const getRegionName = (generationId) => {
   return regionNames[generationId] || '범박사의 포켓몬 도감';
 };
 
-// 포켓몬 상세 페이지 컴포넌트
 function PokemonDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -42,8 +40,6 @@ function PokemonDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('abilities');
-  // Habitat tab state
-
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -57,24 +53,17 @@ function PokemonDetail() {
         setPokemon(data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching pokemon:', err);
         setError('포켓몬 정보를 불러오는데 실패했습니다.');
         setLoading(false);
       }
     };
-
     fetchPokemon();
   }, [id]);
 
-
-
   const handleBack = () => {
-    // URL에서 세대 정보와 스크롤 위치를 가져오거나, 기본값으로 'all' 사용
     const searchParams = new URLSearchParams(window.location.search);
     const generation = searchParams.get('generation') || 'all';
-    const scrollPosition = searchParams.get('scroll') || '0';
-    const pokemonId = searchParams.get('pokemonId') || '';
-    navigate(`/?generation=${generation}&scroll=${scrollPosition}&pokemonId=${pokemonId}`);
+    navigate(`/?generation=${generation}&pokemonId=${id}`);
   };
 
   // 상성 정보 계산
@@ -178,9 +167,8 @@ function PokemonDetail() {
             onClick={() => {
               const searchParams = new URLSearchParams(window.location.search);
               const generation = searchParams.get('generation') || 'all';
-              const scroll = searchParams.get('scroll') || '0';
               const pokemonId = searchParams.get('pokemonId') || '';
-              navigate(`/pokemon/${pokemon.id - 1}?generation=${generation}&scroll=${scroll}&pokemonId=${pokemonId}`);
+              navigate(`/pokemon/${pokemon.id - 1}?generation=${generation}&pokemonId=${pokemonId}`);
             }}
             disabled={pokemon.id <= 1}
           >
@@ -192,9 +180,8 @@ function PokemonDetail() {
             onClick={() => {
               const searchParams = new URLSearchParams(window.location.search);
               const generation = searchParams.get('generation') || 'all';
-              const scroll = searchParams.get('scroll') || '0';
               const pokemonId = searchParams.get('pokemonId') || '';
-              navigate(`/pokemon/${pokemon.id + 1}?generation=${generation}&scroll=${scroll}&pokemonId=${pokemonId}`);
+              navigate(`/pokemon/${pokemon.id + 1}?generation=${generation}&pokemonId=${pokemonId}`);
             }}
             disabled={pokemon.id >= 1025}
           >
@@ -325,7 +312,6 @@ function PokemonDetail() {
   );
 }
 
-// 메인 포켓몬 목록 컴포넌트
 function PokemonList() {
   const navigate = useNavigate();
   const [pokemons, setPokemons] = useState([])
@@ -335,146 +321,78 @@ function PokemonList() {
   const [selectedTypes, setSelectedTypes] = useState(['all'])
   const [selectedGeneration, setSelectedGeneration] = useState(null)
   const [showDex, setShowDex] = useState(false)
-  const [offset, setOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [isFetching, setIsFetching] = useState(false);
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const LIMIT = 50;
-  const observer = useRef();
-  const loaderRef = useRef();
 
-  const [isScrollRestored, setIsScrollRestored] = useState(false);
-
-  // URL에서 세대 정보와 스크롤 위치를 읽어오기
+  // URL에서 generation 파라미터 읽어서 초기 상태 설정
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const generationFromUrl = searchParams.get('generation');
-    const scrollFromUrl = searchParams.get('scroll');
-    
-    if (generationFromUrl) {
-      setSelectedGeneration(generationFromUrl);
+    if (generationFromUrl && !selectedGeneration) {
+      const generationId = generationFromUrl === 'all' ? 'all' : parseInt(generationFromUrl);
+      setSelectedGeneration(generationId);
       setShowDex(true);
     }
-    
-    if (scrollFromUrl && !isScrollRestored) {
-      setScrollPosition(parseInt(scrollFromUrl));
-    }
-  }, [isScrollRestored]);
-
-  // 스크롤 위치 저장 (복원 완료 후에만 활성화)
-  useEffect(() => {
-    if (!isScrollRestored) return;
-    
-    const handleScroll = () => {
-      setScrollPosition(window.scrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isScrollRestored]);
-
-  // 컴포넌트가 마운트되고 포켓몬 데이터가 로드된 후 저장된 스크롤 위치로 복원
-  useEffect(() => {
-    if (scrollPosition > 0 && !loading && pokemons.length > 0 && !isScrollRestored) {
-      // URL에서 포켓몬 ID를 가져와서 해당 포켓몬이 로드되었는지 확인
-      const searchParams = new URLSearchParams(window.location.search);
-      const pokemonIdFromUrl = searchParams.get('pokemonId');
-      
-      if (pokemonIdFromUrl) {
-        const targetPokemonId = parseInt(pokemonIdFromUrl);
-        const pokemonExists = pokemons.some(p => p.id === targetPokemonId);
-        
-        // 해당 포켓몬이 로드되지 않았으면 스크롤 복원을 포기하고 맨 위로 이동
-        if (!pokemonExists) {
-          setIsScrollRestored(true);
-          return;
-        }
-      }
-      
-      setTimeout(() => {
-        window.scrollTo(0, scrollPosition);
-        setIsScrollRestored(true);
-      }, 100);
-    }
-  }, [scrollPosition, loading, pokemons.length, isScrollRestored, pokemons]);
-
-  // 세대/전국도감 선택 시 상태 초기화
-  useEffect(() => {
-    if (!selectedGeneration) return;
-    setLoading(true);
-    setPokemons([]);
-    setOffset(0);
-    setHasMore(true);
-    setIsFetching(false);
-    setError(null);
-    setIsScrollRestored(false);
   }, [selectedGeneration]);
 
-  // 최신 상태를 참조하기 위한 ref들
-  const isFetchingRef = useRef(isFetching);
-  const hasMoreRef = useRef(hasMore);
-  const offsetRef = useRef(offset);
-
-  useEffect(() => { isFetchingRef.current = isFetching; }, [isFetching]);
-  useEffect(() => { hasMoreRef.current = hasMore; }, [hasMore]);
-  useEffect(() => { offsetRef.current = offset; }, [offset]);
-
-  // 견고한 fetchPokemons
-  const fetchPokemons = useCallback(async () => {
-    if (!selectedGeneration || isFetchingRef.current || !hasMoreRef.current) return;
-    isFetchingRef.current = true;
-    setIsFetching(true);
+  // 전체 포켓몬 한 번에 fetch
+  const fetchPokemons = useCallback(async (generation) => {
+    setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${selectedGeneration}&limit=${LIMIT}&offset=${offsetRef.current}`);
+      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&limit=2000`);
       if (!response.ok) throw new Error('Failed to fetch pokemons');
       const data = await response.json();
-      setPokemons(prev => {
-        const all = [...prev, ...data.pokemons];
-        const unique = Array.from(new Map(all.map(p => [p.id, p])).values());
-        unique.sort((a, b) => a.id - b.id);
-        return unique;
-      });
-      hasMoreRef.current = data.pokemons.length === LIMIT;
-      offsetRef.current += LIMIT;
-      setHasMore(hasMoreRef.current);
-      setOffset(offsetRef.current);
+      const unique = Array.from(new Map(data.pokemons.map(p => [p.id, p])).values());
+      unique.sort((a, b) => a.id - b.id);
+      setPokemons(unique);
       setLoading(false);
     } catch (err) {
       setError('포켓몬 리스트를 불러오는데 실패했습니다.');
       setLoading(false);
-    } finally {
-      isFetchingRef.current = false;
-      setIsFetching(false);
     }
-  }, [selectedGeneration]);
+  }, []);
 
-  // IntersectionObserver를 loaderRef가 바뀔 때만 새로 연결
+  // 세대/전국도감 선택 시 전체 fetch
   useEffect(() => {
-    if (!loaderRef.current) return;
-    const observer = new window.IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && !isFetchingRef.current && hasMoreRef.current) {
-        fetchPokemons();
-      }
-    }, { rootMargin: '100px' });
-    observer.observe(loaderRef.current);
-    return () => observer.disconnect();
-  }, [loaderRef, fetchPokemons]);
+    if (!selectedGeneration) return;
+    setPokemons([]);
+    setError(null);
+    fetchPokemons(selectedGeneration);
+  }, [selectedGeneration, fetchPokemons]);
 
   // 검색/필터 적용
   const filteredPokemons = pokemons.filter(pokemon => {
     const matchesName =
       pokemon.koreanName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       pokemon.name.toLowerCase().includes(searchTerm.toLowerCase());
-    // 타입 필터링: 'all'이 선택되었거나, 선택된 모든 타입을 모두 가진 포켓몬만 통과
-    const matchesType = 
-      selectedTypes.includes('all') || 
+    const matchesType =
+      selectedTypes.includes('all') ||
       selectedTypes.every(selectedType => pokemon.types.includes(selectedType));
     return matchesName && matchesType;
   });
 
+  // 포켓몬 디테일에서 뒤로가기 시 스크롤 복원
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const pokemonIdFromUrl = searchParams.get('pokemonId');
+    if (pokemonIdFromUrl && filteredPokemons.length > 0) {
+      const targetPokemonId = parseInt(pokemonIdFromUrl);
+      const targetPokemon = filteredPokemons.find(p => p.id === targetPokemonId);
+      if (targetPokemon) {
+        setTimeout(() => {
+          const pokemonCard = document.querySelector(`[data-pokemon-id="${targetPokemonId}"]`);
+          if (pokemonCard) {
+            pokemonCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // URL에서 pokemonId 파라미터 제거
+            const params = new URLSearchParams(window.location.search);
+            params.delete('pokemonId');
+            window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+          }
+        }, 100);
+      }
+    }
+  }, [filteredPokemons]);
+
   const handlePokemonClick = (pokemon) => {
-    // 현재 스크롤 위치와 포켓몬 ID를 URL에 저장
-    navigate(`/pokemon/${pokemon.id}?generation=${selectedGeneration}&scroll=${window.scrollY}&pokemonId=${pokemon.id}`);
+    navigate(`/pokemon/${pokemon.id}?generation=${selectedGeneration}&pokemonId=${pokemon.id}`);
   };
 
   const resetFilters = () => {
@@ -488,11 +406,7 @@ function PokemonList() {
     setSelectedTypes(['all']);
     setShowDex(true);
     setPokemons([]);
-    setOffset(0);
-    setHasMore(true);
-    setIsFetching(false);
     setError(null);
-    // URL 업데이트
     navigate(`/?generation=${id}`);
   };
 
@@ -502,9 +416,6 @@ function PokemonList() {
     setSearchTerm('');
     setSelectedTypes(['all']);
     setPokemons([]);
-    setOffset(0);
-    setHasMore(true);
-    setIsFetching(false);
     setError(null);
     navigate('/');
   };
@@ -584,7 +495,6 @@ function PokemonList() {
         />
         <div className="type-selector">
           <div className="type-buttons-wrapper">
-            {/* 데스크탑: 8*2, 모바일: 4*4 */}
             {window.innerWidth >= 769 ? (
               <>
                 <div className="type-buttons-row">
@@ -686,6 +596,7 @@ function PokemonList() {
             key={pokemon.id}
             className="pokemon-card"
             onClick={() => handlePokemonClick(pokemon)}
+            data-pokemon-id={pokemon.id}
           >
             <img src={pokemon.image} alt={pokemon.koreanName} />
             <h3>{pokemon.koreanName}</h3>
@@ -699,12 +610,8 @@ function PokemonList() {
           </div>
         ))}
       </div>
-      {/* 무한 스크롤 하단 감지용 div - 필터가 없거나 검색어가 없을 때만 표시 */}
-      {(!searchTerm && selectedTypes.includes('all')) && (
-        <div ref={loaderRef} style={{ height: 40 }} />
-      )}
-      {isFetching && <div className="loading">로딩 중...</div>}
-      {filteredPokemons.length === 0 && !isFetching && (
+      {loading && <div className="loading">로딩 중...</div>}
+      {filteredPokemons.length === 0 && !loading && (
         <div className="no-results">
           검색 결과가 없습니다.
         </div>
@@ -713,7 +620,6 @@ function PokemonList() {
   );
 }
 
-// 메인 App 컴포넌트
 function App() {
   return (
     <Router>
