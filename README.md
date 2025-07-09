@@ -61,9 +61,16 @@ npm run backend
 npm run dev
 ```
 
-### 3. 브라우저에서 확인
+### 3. 환경 변수 설정 (선택사항)
+로컬 개발 시 백엔드 API URL을 설정하려면 `.env.local` 파일을 생성하세요:
+```bash
+# .env.local
+VITE_API_URL=http://localhost:3002
+```
+
+### 4. 브라우저에서 확인
 - 프론트엔드: http://localhost:5173
-- 백엔드 API: http://localhost:3001
+- 백엔드 API: http://localhost:3002
 
 ## 🔌 API 엔드포인트
 
@@ -85,7 +92,7 @@ npm run dev
 ### 세대별 포켓몬 조회
 ```javascript
 // 1세대 포켓몬 50마리 조회
-fetch('http://localhost:3001/api/pokemons?generation=1&limit=50')
+fetch('http://localhost:3002/api/pokemons?generation=1&limit=50')
   .then(response => response.json())
   .then(data => console.log(data.pokemons));
 ```
@@ -93,7 +100,7 @@ fetch('http://localhost:3001/api/pokemons?generation=1&limit=50')
 ### 특정 포켓몬들 조회
 ```javascript
 // ID 1, 4, 7번 포켓몬 조회
-fetch('http://localhost:3001/api/pokemons/ids?ids=1,4,7')
+fetch('http://localhost:3002/api/pokemons/ids?ids=1,4,7')
   .then(response => response.json())
   .then(data => console.log(data.pokemons));
 ```
@@ -118,8 +125,22 @@ fetch('http://localhost:3001/api/pokemons/ids?ids=1,4,7')
 - 직관적인 필터링 시스템
 - 로딩 상태 및 에러 처리
 
+## 🌐 배포
+
+### Vercel (프론트엔드)
+- **URL**: https://poke-dex-beta-seven.vercel.app/
+- **Beta URL**: https://poke-dex-beta-seven.vercel.app/
+- **배포 방법**: GitHub 연동으로 자동 배포
+- **환경 변수**: `VITE_API_URL=https://pokedex-1ult.onrender.com`
+
+### Render (백엔드)
+- **URL**: https://pokedex-1ult.onrender.com
+- **배포 방법**: GitHub 연동으로 자동 배포
+- **포트**: 3002
+
 ## 🔄 업데이트 내역
 
 - v1.0.0: 기본 포켓몬 도감 기능
 - v1.1.0: 백엔드 API 서버 추가
 - v1.2.0: 캐싱 시스템 및 성능 최적화
+- v1.3.0: 무한 스크롤 페이지네이션 버그 수정
