@@ -38,6 +38,14 @@ async function getPokemonDetails(id) {
       for (const variety of speciesData.varieties) {
         if (variety.is_default) continue;
         const formName = variety.pokemon.name.split('-').slice(1).join('-') || 'default';
+        // 메테노(774) 폼 필터링: orange-meteor부터 violet-meteor까지 제외
+        if (pokemonData.id === 774) {
+          const formsToRemove = ['orange-meteor', 'yellow-meteor', 'green-meteor', 
+                                'indigo-meteor', 'blue-meteor', 'violet-meteor'];
+          if (formsToRemove.includes(formName)) {
+            continue; // 이 폼은 건너뛰기
+  }
+}
         // 지가르데(718) 폼 필터링: 10, 50, complete만 허용
         if (pokemonData.id === 718 && !['10', '50', 'complete'].includes(formName)) continue;
         try {
@@ -195,8 +203,13 @@ function getKoreanFormName(formName, pokemonId = null) {
     'plant': '플랜트폼',
     'sandy': '샌디폼',
     'trash': '트래시폼',
-    'red': '레드폼',
-    'blue': '블루폼',
+    'red': '빨간색코어',
+    'orange': '주황색코어',
+    'yellow': '노란색코어',
+    'green': '초록색코어',
+    'indigo': '옥색코어',
+    'blue': '파란색코어',
+    'violet': '보라색코어',
     'white': '화이트폼',
     'zen': '달마모드',
     'standard': '스탠다드폼',
@@ -263,6 +276,8 @@ function getKoreanFormName(formName, pokemonId = null) {
     'single-strike': '일격의 태세',
     'primal': '원시폼',
     'origin': '오리진폼',
+    'family-of-three':'세가족',
+    'roaming':'도보폼',
     'galar-standard': '가라르 불비달마',
     'galar-zen': '가라르 달마모드',
     'default': '기본폼'
@@ -466,6 +481,7 @@ app.post('/api/cache/clear', (req, res) => {
 // 특성 설명 함수
 function getAbilityDescription(abilityName) {
   const descriptions = {
+    'shields-down':'껍질이 있을 때는 방어가 우수하고 모든 상태이상에 걸리지 않sms다. HP가 절반 이하가 되면 껍질을 버리고 공격에 특화된 폼이 된다.',
     'stench': '악취로 인해 상대가 도망칠 확률이 높아진다.',
     'drizzle': '배틀 시작 시 비를 내리게 한다.',
     'speed-boost': '매 턴마다 스피드가 올라간다.',

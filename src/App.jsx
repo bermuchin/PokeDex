@@ -777,6 +777,7 @@ function getKoreanStatName(stat) {
 
 function getKoreanAbilityName(ability) {
   const abilityNames = {
+    'shields-down':'리밋실드',
     'stench': '악취',
     'drizzle': '잔비',
     'speed-boost': '가속',
