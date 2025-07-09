@@ -410,53 +410,55 @@ function PokemonList() {
     setIsScrollRestored(false);
   }, [selectedGeneration]);
 
-  // 포켓몬 데이터 fetch 함수
+  // 최신 상태를 참조하기 위한 ref들
+  const isFetchingRef = useRef(isFetching);
+  const hasMoreRef = useRef(hasMore);
+  const offsetRef = useRef(offset);
+
+  useEffect(() => { isFetchingRef.current = isFetching; }, [isFetching]);
+  useEffect(() => { hasMoreRef.current = hasMore; }, [hasMore]);
+  useEffect(() => { offsetRef.current = offset; }, [offset]);
+
+  // 견고한 fetchPokemons
   const fetchPokemons = useCallback(async () => {
-    if (!selectedGeneration || isFetching || !hasMore) return;
+    if (!selectedGeneration || isFetchingRef.current || !hasMoreRef.current) return;
+    isFetchingRef.current = true;
     setIsFetching(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${selectedGeneration}&limit=${LIMIT}&offset=${offset}`);
+      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${selectedGeneration}&limit=${LIMIT}&offset=${offsetRef.current}`);
       if (!response.ok) throw new Error('Failed to fetch pokemons');
       const data = await response.json();
       setPokemons(prev => {
-        // id 기준 중복 제거
         const all = [...prev, ...data.pokemons];
         const unique = Array.from(new Map(all.map(p => [p.id, p])).values());
+        unique.sort((a, b) => a.id - b.id);
         return unique;
       });
-      setHasMore(data.pokemons.length === LIMIT);
-      setOffset(prev => prev + LIMIT);
+      hasMoreRef.current = data.pokemons.length === LIMIT;
+      offsetRef.current += LIMIT;
+      setHasMore(hasMoreRef.current);
+      setOffset(offsetRef.current);
       setLoading(false);
     } catch (err) {
       setError('포켓몬 리스트를 불러오는데 실패했습니다.');
       setLoading(false);
     } finally {
+      isFetchingRef.current = false;
       setIsFetching(false);
     }
-  }, [selectedGeneration, isFetching, hasMore]);
-
-  // 최초 및 추가 fetch
-  useEffect(() => {
-    if (!selectedGeneration) return;
-    fetchPokemons();
   }, [selectedGeneration]);
 
-  // 무한 스크롤 IntersectionObserver
+  // IntersectionObserver를 loaderRef가 바뀔 때만 새로 연결
   useEffect(() => {
-    // 필터가 적용되어 있거나 이미 로딩 중이거나 더 이상 데이터가 없으면 무한 스크롤 비활성화
-    if (isFetching || !hasMore || searchTerm || !selectedTypes.includes('all')) return;
-    
-    if (observer.current) observer.current.disconnect();
-    observer.current = new window.IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && !isFetching && hasMore) {
+    if (!loaderRef.current) return;
+    const observer = new window.IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !isFetchingRef.current && hasMoreRef.current) {
         fetchPokemons();
       }
-    }, {
-      rootMargin: '100px' // 100px 전에 미리 로딩 시작
-    });
-    if (loaderRef.current) observer.current.observe(loaderRef.current);
-    return () => observer.current && observer.current.disconnect();
-  }, [isFetching, hasMore, selectedGeneration, offset, searchTerm, selectedTypes]);
+    }, { rootMargin: '100px' });
+    observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [loaderRef, fetchPokemons]);
 
   // 검색/필터 적용
   const filteredPokemons = pokemons.filter(pokemon => {
