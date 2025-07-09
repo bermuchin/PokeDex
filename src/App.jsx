@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom'
 import './App.css'
 
-const API_BASE_URL = 'https://pokedex-1ult.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
 
 const GENERATION_LIST = [
   { id: 'all', label: '전국도감' },
@@ -51,8 +51,7 @@ function PokemonDetail() {
     const fetchPokemon = async () => {
       try {
         setLoading(true);
-        const apiUrl = import.meta.env.VITE_API_URL;
-        const response = await fetch(`${apiUrl}/api/pokemons/${id}`);
+        const response = await fetch(`${API_BASE_URL}/api/pokemons/${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch pokemon');
         }
@@ -363,9 +362,8 @@ function PokemonList() {
   const fetchPokemons = useCallback(async () => {
     if (!selectedGeneration || isFetching || !hasMore) return;
     setIsFetching(true);
-    const apiUrl = import.meta.env.VITE_API_URL;
     try {
-      const response = await fetch(`${apiUrl}/api/pokemons?generation=${selectedGeneration}&limit=${LIMIT}&offset=${offset}`);
+      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${selectedGeneration}&limit=${LIMIT}&offset=${offset}`);
       if (!response.ok) throw new Error('Failed to fetch pokemons');
       const data = await response.json();
       setPokemons(prev => {
@@ -383,7 +381,7 @@ function PokemonList() {
     } finally {
       setIsFetching(false);
     }
-  }, [selectedGeneration, offset, isFetching, hasMore]);
+  }, [selectedGeneration, isFetching, hasMore]);
 
   // 최초 및 추가 fetch
   useEffect(() => {

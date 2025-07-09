@@ -129,8 +129,26 @@ app.get('/api/pokemons', async (req, res) => {
 
     const species = await getGenerationPokemons(generation);
     
-    // 페이지네이션 적용
-    const paginatedSpecies = species.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+    // offset과 limit을 정수로 변환
+    const offsetInt = parseInt(offset);
+    const limitInt = parseInt(limit);
+    
+    // 페이지네이션 적용 - 범위 체크 추가
+    const startIndex = offsetInt;
+    const endIndex = offsetInt + limitInt;
+    
+    // 범위가 유효한지 확인
+    if (startIndex >= species.length) {
+      return res.json({
+        pokemons: [],
+        total: species.length,
+        limit: limitInt,
+        offset: offsetInt,
+        cached: 0
+      });
+    }
+    
+    const paginatedSpecies = species.slice(startIndex, endIndex);
     
     // 캐시된 포켓몬과 새로 가져올 포켓몬 분리
     const pokemonPromises = paginatedSpecies.map(async (species) => {
@@ -144,8 +162,8 @@ app.get('/api/pokemons', async (req, res) => {
     res.json({
       pokemons: pokemonDetails,
       total: species.length,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
+      limit: limitInt,
+      offset: offsetInt,
       cached: pokemonDetails.filter(p => pokemonCache.has(`pokemon_${p.id}`)).length
     });
   } catch (error) {
