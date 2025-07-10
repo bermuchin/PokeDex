@@ -175,6 +175,22 @@ async function getGenerationPokemons(generation) {
 }
 
 function getKoreanFormName(formName, pokemonId = null) {
+  if (pokemonId) {
+    if (formName === 'dusk') {
+      if (pokemonId === 745) return '황혼의 모습'; //루가루암
+      if (pokemonId === 800) return '황혼의 갈기'; //네크로즈마
+    }
+    // 지가르데 폼 처리
+    if (pokemonId === 718) {
+      if (formName === '10') return '10%폼';
+      if (formName === '100' || formName === 'complete') return '퍼펙트폼';
+    }
+    // 자시안과 자마젠타의 crowned 폼 처리
+    if (formName === 'crowned') {
+      if (pokemonId === 888) return '검왕의 모습'; // 자시안
+      if (pokemonId === 889) return '방패왕의 모습'; // 자마젠타
+    }
+  }
   const formNames = {
     'mega': '메가진화',
     'mega-x': '메가진화 X',
@@ -211,7 +227,7 @@ function getKoreanFormName(formName, pokemonId = null) {
     'blue': '파란색코어',
     'violet': '보라색코어',
     'white': '화이트폼',
-    'zen': '달마모드',
+    'black': '블랙폼',
     'standard': '스탠다드폼',
     'resolute': '리졸루트폼',
     'pirouette': '피루엣폼',
@@ -274,29 +290,25 @@ function getKoreanFormName(formName, pokemonId = null) {
     'female': '암컷',
     'rapid-strike': '연격의 태세',
     'single-strike': '일격의 태세',
-    'primal': '원시폼',
+    'primal': '원시회귀',
     'origin': '오리진폼',
     'family-of-three':'세가족',
     'roaming':'도보폼',
-    'galar-standard': '가라르 불비달마',
+    'galar-standard': '가라르폼',
     'galar-zen': '가라르 달마모드',
+    'zen': '달마모드',
+    'school':'군집의 모습',
+    'low-key':'로우한 모습',
+    'low-key-gmax':'로우한 모습 거다이맥스',
+    'amped-gmax':'하이한 모습 거다이맥스',
+    'noice': '나이스페이스',
+    'hangry':'배고픈 모양',
+    'single-strike-gmax': '일격의 태세 거다이맥스',
+    'rapid-strike-gmax': '연격의 태세 거다이맥스',
     'default': '기본폼'
   };
   // 특정 포켓몬의 특수 폼 처리
-  if (pokemonId) {
-    if (formName === 'dusk' && pokemonId === 745) {
-      return '황혼의 모습';
-    }
-    if (formName === 'dusk' && pokemonId === 800) {
-      return '황혼의 갈기';
-    }
-    // 지가르데 폼 처리
-    if (pokemonId === 718) {
-      if (formName === '10') return '10%폼';
-      if (formName === '50') return '50%폼';
-      if (formName === '100' || formName === 'complete') return '퍼펙트폼';
-    }
-  }
+  
   
   return formNames[formName] || formName;
 }

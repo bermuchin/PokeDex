@@ -228,7 +228,12 @@ function PokemonDetail() {
             →
           </button>
           <div className="pokemon-detail-info">
-            <h2>{currentFormData.koreanName}</h2>
+            <h2>
+              {selectedForm === 'default' 
+                ? currentFormData.koreanName 
+                : getFormDisplayName(currentFormData.koreanName, pokemon.koreanName)
+              }
+            </h2>
             <p className="pokemon-number">#{pokemon.id.toString().padStart(3, '0')}</p>
             <div className="types">
               {currentFormData.types.map((type) => (
@@ -249,7 +254,11 @@ function PokemonDetail() {
                 className={`form-button ${selectedForm === 'default' ? 'selected' : ''}`}
                 onClick={() => setSelectedForm('default')}
               >
-                기본폼
+                {
+                  (pokemon.forms.find(f => f.name === 'default')?.koreanName) 
+                    ? pokemon.forms.find(f => f.name === 'default').koreanName 
+                    : '기본폼'
+                }
               </button>
               {pokemon.forms.map((form) => (
                 <button
@@ -773,6 +782,39 @@ function getKoreanStatName(stat) {
     speed: '속도'
   };
   return statNames[stat] || stat;
+}
+
+function getFormDisplayName(formName, pokemonName) {
+  // 메가진화, 원시회귀, 거다이맥스는 앞에 접두사
+  if (formName.includes('메가진화') || formName === '원시회귀' || formName === '거다이맥스') {
+    let prefix;
+    if (formName.includes('메가진화')) {
+      if (formName === '메가진화 X') {
+        return `메가 ${pokemonName} X`;
+      } else if (formName === '메가진화 Y') {
+        return `메가 ${pokemonName} Y`;
+      } else {
+        prefix = '메가';
+      }
+    } else if (formName === '원시회귀') {
+      prefix = '원시';
+    } else if (formName === '거다이맥스') {
+      prefix = '거다이맥스';
+    }
+    return `${prefix} ${pokemonName}`;
+  }
+  
+  // 화이트폼과 블랙폼은 앞에 접두사
+      // 화이트폼은 앞에 접두사
+  if (formName === '화이트폼') {
+    return `화이트 ${pokemonName}`;
+  }
+  if (formName === '블랙폼') {
+    return `블랙 ${pokemonName}`;
+  }
+  
+  // 나머지는 뒤에 폼명
+  return `${pokemonName} ${formName}`;
 }
 
 function getKoreanAbilityName(ability) {
