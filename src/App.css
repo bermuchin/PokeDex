@@ -600,6 +600,24 @@ h1 {
   margin-top: 30px;
 }
 
+/* 데스크탑에서 포켓몬 디테일 페이지 타입 버튼 크기 조정 */
+@media (min-width: 769px) {
+  .pokemon-detail-header .types {
+    gap: 15px;
+    margin-top: 12px;
+  }
+  
+  .pokemon-detail-header .type {
+    padding: 5px 10px;
+    font-size: 1rem;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
 .tab-buttons {
   display: flex;
   margin-bottom: 25px;
