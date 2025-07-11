@@ -93,7 +93,7 @@ function PokemonDetail() {
     }
   }, [activeTab, id, habitats, habitatLoading]);
 
-  // 진화체인 탭 클릭 시 fetch
+  // 진화트리 탭 클릭 시 fetch
   useEffect(() => {
     if (activeTab === 'evolution' && !evolutionChain && !evolutionLoading) {
       setEvolutionLoading(true);
@@ -105,7 +105,7 @@ function PokemonDetail() {
           setEvolutionLoading(false);
         })
         .catch(() => {
-          setEvolutionError('진화체인 정보를 불러오지 못했습니다.');
+          setEvolutionError('진화트리 정보를 불러오지 못했습니다.');
           setEvolutionLoading(false);
         });
     }
@@ -353,7 +353,7 @@ function PokemonDetail() {
               className={`tab-button ${activeTab === 'evolution' ? 'active' : ''}`}
               onClick={() => setActiveTab('evolution')}
             >
-              진화체인
+              진화트리
             </button>
           </div>
           
@@ -440,7 +440,7 @@ function PokemonDetail() {
               <div className="evolution-content">
                 {evolutionLoading && (
                   <div className="loading">
-                    <div>진화체인 정보를 불러오는 중...</div>
+                    <div>진화트리 정보를 불러오는 중...</div>
                   </div>
                 )}
                 {evolutionError && <div className="error">{evolutionError}</div>}
@@ -450,7 +450,7 @@ function PokemonDetail() {
                 {!evolutionLoading && !evolutionError && evolutionChain && (
                   Array.isArray(evolutionChain) ? (
                     evolutionChain.length === 0 ? (
-                      <div className="no-evolution">진화체인 정보가 없습니다.</div>
+                      <div className="no-evolution">진화트리 정보가 없습니다.</div>
                     ) : (
                       <div className="evolution-chain">
                         {evolutionChain.map((node, idx) => (
@@ -492,7 +492,7 @@ function PokemonDetail() {
                             {idx < evolutionChain.length - 1 && (
                               <div className="evolution-arrow">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M12 5v14M12 19l-5-5M12 19l5-5" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                  <path d="M12 5v14M12 19l-5-5M12 19l5-5" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="evolution-arrow-svg"/>
                                 </svg>
                               </div>
                             )}
@@ -505,7 +505,7 @@ function PokemonDetail() {
                       <EvolutionTree node={evolutionChain} />
                     </div>
                   ) : (
-                    <div className="no-evolution">진화체인 정보가 없습니다.</div>
+                    <div className="no-evolution">진화트리 정보가 없습니다.</div>
                   ))
                 )}
               </div>
@@ -558,7 +558,7 @@ function EvolutionTree({ node }) {
         <>
           <div className="evolution-arrow">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 5v14M12 19l-5-5M12 19l5-5" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M12 5v14M12 19l-5-5M12 19l5-5" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="evolution-arrow-svg"/>
             </svg>
           </div>
           <div className="evolution-children">
@@ -582,18 +582,8 @@ function PokemonList() {
   const [selectedGeneration, setSelectedGeneration] = useState(null)
   const [showDex, setShowDex] = useState(false)
   
-  // 세대별 포켓몬 데이터 캐싱을 위한 상태 추가 (최대 5개 세대까지 캐싱)
+  // 세대별 포켓몬 데이터 캐싱을 위한 상태 추가
   const [pokemonCache, setPokemonCache] = useState(new Map())
-  
-  // 캐시 크기 제한 함수
-  const limitCacheSize = useCallback((cache, maxSize = 5) => {
-    if (cache.size > maxSize) {
-      const entries = Array.from(cache.entries());
-      const newCache = new Map(entries.slice(-maxSize));
-      return newCache;
-    }
-    return cache;
-  }, []);
 
   // URL에서 generation 파라미터 읽어서 초기 상태 설정
   useEffect(() => {
@@ -627,18 +617,15 @@ function PokemonList() {
       const unique = Array.from(new Map(pokemonList.map(p => [p.id, p])).values());
       unique.sort((a, b) => a.id - b.id);
       
-      // 캐시에 저장 (크기 제한 적용)
-      setPokemonCache(prev => {
-        const newCache = new Map(prev).set(generation, unique);
-        return limitCacheSize(newCache);
-      });
+      // 캐시에 저장
+      setPokemonCache(prev => new Map(prev).set(generation, unique));
       setPokemons(unique);
       setLoading(false);
     } catch (err) {
       setError('포켓몬 리스트를 불러오는데 실패했습니다.');
       setLoading(false);
     }
-  }, [pokemonCache, limitCacheSize]);
+  }, [pokemonCache]);
 
   // 세대/전국도감 선택 시 캐시 확인 후 fetch
   useEffect(() => {

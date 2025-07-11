@@ -14,9 +14,8 @@ const pokemonCache = new Map();
 const generationCache = new Map();
 const evolutionCache = new Map();
 
-// 세대별 전체 포켓몬 데이터 캐싱 (최대 3개 세대만 캐싱)
+// 세대별 전체 포켓몬 데이터 캐싱
 const generationPokemonCache = new Map();
-const MAX_GENERATION_CACHE_SIZE = 3;
 
 // 캐시 set/만료 함수
 function setCacheWithExpiry(cache, key, value, ttlMs) {
@@ -24,15 +23,13 @@ function setCacheWithExpiry(cache, key, value, ttlMs) {
   setTimeout(() => cache.delete(key), ttlMs);
 }
 
-// 세대 캐시 크기 제한 함수
-function limitGenerationCacheSize(cache, maxSize = MAX_GENERATION_CACHE_SIZE) {
-  if (cache.size > maxSize) {
-    const entries = Array.from(cache.entries());
-    const newCache = new Map(entries.slice(-maxSize));
-    console.log(`🗑️ Cleared old generation cache entries. Current size: ${newCache.size}`);
-    return newCache;
-  }
-  return cache;
+// 캐시 상태 확인 함수
+function logCacheStatus() {
+  console.log(`📊 Cache Status:`);
+  console.log(`   - Pokemon cache: ${pokemonCache.size} entries`);
+  console.log(`   - Generation cache: ${generationCache.size} entries`);
+  console.log(`   - Generation Pokemon cache: ${generationPokemonCache.size} entries`);
+  console.log(`   - Evolution cache: ${evolutionCache.size} entries`);
 }
 
 // 폼 정보 fetch/파싱 유틸 함수 분리
@@ -194,8 +191,9 @@ async function getGenerationPokemonData(generation) {
   const cacheKey = `generation_data_${generation}`;
   
   if (generationPokemonCache.has(cacheKey)) {
-    console.log(`📦 Using cached generation data: ${generation}`);
-    return generationPokemonCache.get(cacheKey);
+    const cachedData = generationPokemonCache.get(cacheKey);
+    console.log(`📦 Using cached generation data: ${generation} (${cachedData.pokemons.length} pokemon)`);
+    return cachedData;
   }
 
   console.log(`🔄 Fetching generation data: ${generation}`);
@@ -237,20 +235,12 @@ async function getGenerationPokemonData(generation) {
     const endTime = Date.now();
     console.log(`✅ Generation ${generation} loaded in ${endTime - startTime}ms (${allPokemonDetails.length} pokemon)`);
     
-    // 캐시에 저장 (2시간간 유효, 크기 제한 적용)
+    // 캐시에 저장 (2시간간 유효)
     generationPokemonCache.set(cacheKey, result);
     setTimeout(() => generationPokemonCache.delete(cacheKey), 2 * 60 * 60 * 1000);
     
-    // 캐시 크기 제한 적용
-    if (generationPokemonCache.size > MAX_GENERATION_CACHE_SIZE) {
-      const entries = Array.from(generationPokemonCache.entries());
-      const newCache = new Map(entries.slice(-MAX_GENERATION_CACHE_SIZE));
-      generationPokemonCache.clear();
-      entries.slice(-MAX_GENERATION_CACHE_SIZE).forEach(([key, value]) => {
-        generationPokemonCache.set(key, value);
-      });
-      console.log(`🗑️ Generation cache limited to ${MAX_GENERATION_CACHE_SIZE} entries`);
-    }
+    // 캐시 상태 로그
+    logCacheStatus();
     
     return result;
   } catch (error) {
@@ -577,7 +567,9 @@ app.get('/api/cache/status', (req, res) => {
     pokemonCacheSize: pokemonCache.size,
     generationCacheSize: generationCache.size,
     generationPokemonCacheSize: generationPokemonCache.size,
-    memoryUsage: process.memoryUsage()
+    evolutionCacheSize: evolutionCache.size,
+    memoryUsage: process.memoryUsage(),
+    cachedGenerations: Array.from(generationPokemonCache.keys())
   });
 });
 
