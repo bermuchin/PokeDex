@@ -598,21 +598,14 @@ function PokemonList() {
 
   // 전체 포켓몬 한 번에 fetch (고성능 API 사용)
   const fetchPokemons = useCallback(async (generation) => {
-    // 캐시된 데이터가 있는지 확인
-    if (pokemonCache.has(generation)) {
-      setPokemons(pokemonCache.get(generation));
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     try {
-      // 고성능 API 사용 (full=true로 전체 데이터 한 번에 가져오기)
-      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&full=true`);
+      // 고성능 API 사용 (fast=true로 기본 정보만 빠르게 가져오기)
+      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&fast=true&limit=1000&offset=0`);
       if (!response.ok) throw new Error('Failed to fetch pokemons');
       const data = await response.json();
       
-      // 고성능 API 응답 구조에 맞게 처리
+      // API 응답 구조에 맞게 처리
       const pokemonList = data.pokemons || data;
       const unique = Array.from(new Map(pokemonList.map(p => [p.id, p])).values());
       unique.sort((a, b) => a.id - b.id);
@@ -625,7 +618,7 @@ function PokemonList() {
       setError('포켓몬 리스트를 불러오는데 실패했습니다.');
       setLoading(false);
     }
-  }, [pokemonCache]);
+  }, []);
 
   // 세대/전국도감 선택 시 캐시 확인 후 fetch
   useEffect(() => {
@@ -689,11 +682,14 @@ function PokemonList() {
   };
 
   const handleGenerationClick = (id) => {
+    // 세대 변경 시 포켓몬 리스트 초기화 및 로딩 강제 표시
+    setPokemons([]);
     setSelectedGeneration(id);
     setSearchTerm('');
     setSelectedTypes(['all']);
     setShowDex(true);
     setError(null);
+    setLoading(true); // 로딩 상태 강제 표시
     navigate(`/?generation=${id}`);
   };
 

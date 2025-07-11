@@ -186,68 +186,7 @@ async function getGenerationPokemons(generation) {
   }
 }
 
-// 세대별 전체 포켓몬 데이터를 한 번에 가져오는 함수
-async function getGenerationPokemonData(generation) {
-  const cacheKey = `generation_data_${generation}`;
-  
-  if (generationPokemonCache.has(cacheKey)) {
-    const cachedData = generationPokemonCache.get(cacheKey);
-    console.log(`📦 Using cached generation data: ${generation} (${cachedData.pokemons.length} pokemon)`);
-    return cachedData;
-  }
 
-  console.log(`🔄 Fetching generation data: ${generation}`);
-  const startTime = Date.now();
-  
-  try {
-    const species = await getGenerationPokemons(generation);
-    
-    // 병렬로 모든 포켓몬 상세 정보 가져오기 (청크 단위로 처리)
-    const chunkSize = 50;
-    const allPokemonDetails = [];
-    
-    for (let i = 0; i < species.length; i += chunkSize) {
-      const chunk = species.slice(i, i + chunkSize);
-      const pokemonPromises = chunk.map(async (species) => {
-        const id = species.url.split('/').filter(Boolean).pop();
-        return await getPokemonDetails(id);
-      });
-      
-      const chunkResults = await Promise.all(pokemonPromises);
-      allPokemonDetails.push(...chunkResults);
-      
-      // 진행상황 로그 (개발용)
-      if (i % 100 === 0) {
-        console.log(`⏳ Generation ${generation}: ${i}/${species.length} processed`);
-      }
-    }
-    
-    // ID 순으로 정렬
-    allPokemonDetails.sort((a, b) => a.id - b.id);
-    
-    const result = {
-      generation,
-      pokemons: allPokemonDetails,
-      total: allPokemonDetails.length,
-      cached: true
-    };
-    
-    const endTime = Date.now();
-    console.log(`✅ Generation ${generation} loaded in ${endTime - startTime}ms (${allPokemonDetails.length} pokemon)`);
-    
-    // 캐시에 저장 (2시간간 유효)
-    generationPokemonCache.set(cacheKey, result);
-    setTimeout(() => generationPokemonCache.delete(cacheKey), 2 * 60 * 60 * 1000);
-    
-    // 캐시 상태 로그
-    logCacheStatus();
-    
-    return result;
-  } catch (error) {
-    console.error(`❌ Error fetching generation ${generation} data:`, error);
-    throw error;
-  }
-}
 
 function getKoreanFormName(formName, pokemonId = null) {
   if (pokemonId) {
@@ -424,12 +363,7 @@ app.get('/api/pokemons', async (req, res) => {
       return res.status(400).json({ error: 'generation parameter is required' });
     }
 
-    // full=true인 경우 전체 데이터를 한 번에 반환 (고성능)
-    if (full === 'true') {
-      const generationData = await getGenerationPokemonData(generation);
-      res.json(generationData);
-      return;
-    }
+
 
     // 기존 페이지네이션 방식 (하위 호환성)
     const species = await getGenerationPokemons(generation);
