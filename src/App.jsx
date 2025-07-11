@@ -602,8 +602,8 @@ function PokemonList() {
     setLoading(true);
     setError(null);
     try {
-      // 전국도감이면 limit=1100, 아니면 limit=1000
-      const limit = generation === 'all' ? 1100 : 1000;
+      // 전국도감이든 세대별이든 limit=1000으로 고정
+      const limit = 1000;
       const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&fast=true&limit=${limit}&offset=0`);
       if (!response.ok) throw new Error('Failed to fetch pokemons');
       const data = await response.json();
