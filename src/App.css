@@ -595,6 +595,97 @@ h1 {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+.basic-info-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 20px;
+}
+
+.basic-info-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex: 1;
+  gap: 8px;
+}
+
+.basic-info-item .stat-label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.basic-info-item .stat-value {
+  font-size: 1.2rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.abilities-section {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.abilities-section h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.abilities-section .abilities {
+  margin-bottom: 0;
+}
+
+.abilities-section .ability {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 12px;
+  border-left: 4px solid #007bff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.abilities-section .ability.normal {
+  border-left-color: #28a745;
+}
+
+.abilities-section .ability.hidden {
+  border-left-color: #ffc107;
+}
+
+.abilities-section .ability-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.abilities-section .ability-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.abilities-section .ability-description {
+  color: #666;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.abilities-section .hidden-badge {
+  background: #ffc107;
+  color: #333;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 /* 탭 시스템 스타일 */
 .tab-container {
   margin-top: 30px;
@@ -615,6 +706,22 @@ h1 {
     align-items: center;
     justify-content: center;
     text-align: center;
+  }
+  
+  .basic-info-row {
+    gap: 40px;
+  }
+  
+  .basic-info-item {
+    gap: 12px;
+  }
+  
+  .basic-info-item .stat-label {
+    font-size: 1rem;
+  }
+  
+  .basic-info-item .stat-value {
+    font-size: 1.4rem;
   }
 }
 
@@ -680,6 +787,127 @@ h1 {
 /* 상성 탭 스타일 */
 .matchups-content {
   padding: 20px 0;
+}
+
+/* 진화체인 탭 스타일 */
+.evolution-content {
+  padding: 20px 0;
+}
+
+.evolution-chain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.evolution-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.evolution-pokemon {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex: 1;
+}
+
+.evolution-sprite {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.evolution-info {
+  flex: 1;
+}
+
+.evolution-info h4 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.evolution-types {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.evolution-arrow {
+  font-size: 1.5rem;
+  color: #666;
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+.evolution-conditions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.evolution-condition {
+  background: #e9ecef;
+  color: #495057;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.evolution-step.branch {
+  border-left: 3px solid #007bff;
+  padding-left: 10px;
+  margin-left: 10px;
+}
+
+@media (max-width: 768px) {
+  .evolution-chain {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .evolution-step {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .evolution-pokemon {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .evolution-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+.no-evolution {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 20px;
+}
+
+.evolution-content .loading {
+  text-align: center;
+  color: #666;
+  padding: 20px;
 }
 
 .matchups-section {
@@ -1492,4 +1720,30 @@ h1 {
     font-size: 1.1rem;
     margin-bottom: 12px;
   }
+}
+
+.evolution-tree-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.evolution-children {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  margin-top: 8px;
+  justify-content: center;
+}
+
+.evolution-arrow {
+  font-size: 1.5rem;
+  color: #666;
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+.evolution-name {
+  font-weight: 400 !important;
 }

@@ -12,100 +12,104 @@ app.use(express.json());
 // 캐시를 위한 메모리 저장소
 const pokemonCache = new Map();
 const generationCache = new Map();
+const evolutionCache = new Map();
 
-// 포켓몬 상세 정보 가져오기 (캐시 포함)
+// 캐시 set/만료 함수
+function setCacheWithExpiry(cache, key, value, ttlMs) {
+  cache.set(key, value);
+  setTimeout(() => cache.delete(key), ttlMs);
+}
+
+// 폼 정보 fetch/파싱 유틸 함수 분리
+async function getPokemonForms(pokemonData, speciesData) {
+  const forms = [];
+  if (speciesData.varieties && speciesData.varieties.length > 1) {
+    for (const variety of speciesData.varieties) {
+      if (variety.is_default) continue;
+      const formName = variety.pokemon.name.split('-').slice(1).join('-') || 'default';
+      // 메테노(774) 폼 필터링: orange-meteor부터 violet-meteor까지 제외
+      if (pokemonData.id === 774) {
+        const formsToRemove = ['orange-meteor', 'yellow-meteor', 'green-meteor', 
+                              'indigo-meteor', 'blue-meteor', 'violet-meteor'];
+        if (formsToRemove.includes(formName)) {
+          continue; // 이 폼은 건너뛰기
+        }
+      }
+      // 지가르데(718) 폼 필터링: 10, 50, complete만 허용
+      if (pokemonData.id === 718 && !['10', '50', 'complete'].includes(formName)) continue;
+      try {
+        const formResponse = await fetch(variety.pokemon.url);
+        const formData = await formResponse.json();
+        const koreanFormName = getKoreanFormName(formName, pokemonData.id);
+        // 지가르데(718) 폼별 특성 처리
+        let abilities = formData.abilities.map(ability => ({
+          name: ability.ability.name,
+          isHidden: ability.is_hidden,
+          slot: ability.slot,
+          description: getAbilityDescription(ability.ability.name)
+        }));
+        if (pokemonData.id === 718) {
+          if (["10", "50"].includes(formName)) {
+            const names = abilities.map(a => a.name);
+            if (!names.includes("aura-break")) {
+              abilities.push({
+                name: "aura-break",
+                isHidden: false,
+                slot: abilities.length + 1,
+                description: getAbilityDescription("aura-break")
+              });
+            }
+            if (!names.includes("power-construct")) {
+              abilities.push({
+                name: "power-construct",
+                isHidden: false,
+                slot: abilities.length + 1,
+                description: getAbilityDescription("power-construct")
+              });
+            }
+            abilities = abilities.filter(a => a.name === "aura-break" || a.name === "power-construct");
+          }
+          if (["100", "complete"].includes(formName)) {
+            abilities = abilities.filter(a => a.name === "power-construct");
+          }
+        }
+        forms.push({
+          name: formName,
+          koreanName: koreanFormName,
+          image: formData.sprites.other["official-artwork"].front_default || formData.sprites.front_default,
+          types: formData.types.map(type => type.type.name),
+          height: formData.height / 10,
+          weight: formData.weight / 10,
+          abilities: abilities,
+          stats: formData.stats.map(stat => ({
+            name: stat.stat.name,
+            value: stat.base_stat
+          }))
+        });
+      } catch (error) {
+        console.error(`Error fetching form ${formName}:`, error);
+      }
+    }
+  }
+  return forms;
+}
+
+// getPokemonDetails에서 폼 정보 fetch/파싱 함수 사용
 async function getPokemonDetails(id) {
   const cacheKey = `pokemon_${id}`;
-  
   if (pokemonCache.has(cacheKey)) {
     return pokemonCache.get(cacheKey);
   }
-
   try {
     const [pokemonResponse, speciesResponse] = await Promise.all([
       fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`),
       fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}/`)
     ]);
-
     const pokemonData = await pokemonResponse.json();
     const speciesData = await speciesResponse.json();
-
     const koreanName = speciesData.names.find(name => name.language.name === 'ko')?.name || pokemonData.name;
-
-    // 폼 정보 가져오기
-    const forms = [];
-    if (speciesData.varieties && speciesData.varieties.length > 1) {
-      for (const variety of speciesData.varieties) {
-        if (variety.is_default) continue;
-        const formName = variety.pokemon.name.split('-').slice(1).join('-') || 'default';
-        // 메테노(774) 폼 필터링: orange-meteor부터 violet-meteor까지 제외
-        if (pokemonData.id === 774) {
-          const formsToRemove = ['orange-meteor', 'yellow-meteor', 'green-meteor', 
-                                'indigo-meteor', 'blue-meteor', 'violet-meteor'];
-          if (formsToRemove.includes(formName)) {
-            continue; // 이 폼은 건너뛰기
-  }
-}
-        // 지가르데(718) 폼 필터링: 10, 50, complete만 허용
-        if (pokemonData.id === 718 && !['10', '50', 'complete'].includes(formName)) continue;
-        try {
-          const formResponse = await fetch(variety.pokemon.url);
-          const formData = await formResponse.json();
-          const koreanFormName = getKoreanFormName(formName, pokemonData.id);
-
-          // 지가르데(718) 폼별 특성 처리
-          let abilities = formData.abilities.map(ability => ({
-            name: ability.ability.name,
-            isHidden: ability.is_hidden,
-            slot: ability.slot,
-            description: getAbilityDescription(ability.ability.name)
-          }));
-
-          if (pokemonData.id === 718) {
-            if (['10', '50'].includes(formName)) {
-              const names = abilities.map(a => a.name);
-              if (!names.includes('aura-break')) {
-                abilities.push({
-                  name: 'aura-break',
-                  isHidden: false,
-                  slot: abilities.length + 1,
-                  description: getAbilityDescription('aura-break')
-                });
-              }
-              if (!names.includes('power-construct')) {
-                abilities.push({
-                  name: 'power-construct',
-                  isHidden: false,
-                  slot: abilities.length + 1,
-                  description: getAbilityDescription('power-construct')
-                });
-              }
-              abilities = abilities.filter(a => a.name === 'aura-break' || a.name === 'power-construct');
-            }
-            if (['100', 'complete'].includes(formName)) {
-              abilities = abilities.filter(a => a.name === 'power-construct');
-            }
-          }
-
-          forms.push({
-            name: formName,
-            koreanName: koreanFormName,
-            image: formData.sprites.other['official-artwork'].front_default || formData.sprites.front_default,
-            types: formData.types.map(type => type.type.name),
-            height: formData.height / 10,
-            weight: formData.weight / 10,
-            abilities: abilities,
-            stats: formData.stats.map(stat => ({
-              name: stat.stat.name,
-              value: stat.base_stat
-            }))
-          });
-        } catch (error) {
-          console.error(`Error fetching form ${formName}:`, error);
-        }
-      }
-    }
-
+    // 폼 정보 가져오기 (함수 사용)
+    const forms = await getPokemonForms(pokemonData, speciesData);
     const pokemonInfo = {
       id: pokemonData.id,
       name: pokemonData.name,
@@ -126,11 +130,8 @@ async function getPokemonDetails(id) {
       })),
       forms: forms // 폼 정보 추가
     };
-
     // 캐시에 저장 (30분간 유효)
-    pokemonCache.set(cacheKey, pokemonInfo);
-    setTimeout(() => pokemonCache.delete(cacheKey), 30 * 60 * 1000);
-
+    setCacheWithExpiry(pokemonCache, cacheKey, pokemonInfo, 30 * 60 * 1000);
     return pokemonInfo;
   } catch (error) {
     console.error(`Error fetching pokemon ${id}:`, error);
@@ -164,8 +165,7 @@ async function getGenerationPokemons(generation) {
     }
 
     // 캐시에 저장 (60분간 유효)
-    generationCache.set(cacheKey, species);
-    setTimeout(() => generationCache.delete(cacheKey), 60 * 60 * 1000);
+    setCacheWithExpiry(generationCache, cacheKey, species, 60 * 60 * 1000);
 
     return species;
   } catch (error) {
@@ -850,6 +850,116 @@ app.get('/api/pokemons/:id/habitats', async (req, res) => {
   } catch (error) {
     console.error('Error fetching habitat info:', error);
     res.status(500).json({ error: 'Failed to fetch habitat info' });
+  }
+});
+
+// 포켓몬 진화체인 정보 API
+app.get('/api/pokemons/:id/evolution', async (req, res) => {
+  const { id } = req.params;
+  
+  // 캐시 확인
+  const cacheKey = `evolution_${id}`;
+  if (evolutionCache.has(cacheKey)) {
+    return res.json(evolutionCache.get(cacheKey));
+  }
+  
+  try {
+    // 먼저 포켓몬의 species 정보를 가져와서 evolution-chain URL을 얻음
+    const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}/`);
+    if (!speciesResponse.ok) {
+      return res.status(404).json({ error: 'Pokemon species not found' });
+    }
+    const speciesData = await speciesResponse.json();
+    
+    if (!speciesData.evolution_chain?.url) {
+      const result = { evolutionChain: [] };
+      setCacheWithExpiry(evolutionCache, cacheKey, result, 30 * 60 * 1000); // 30분 캐시
+      return res.json(result);
+    }
+
+    // evolution-chain 정보를 가져옴
+    const evolutionResponse = await fetch(speciesData.evolution_chain.url);
+    if (!evolutionResponse.ok) {
+      return res.status(404).json({ error: 'Evolution chain not found' });
+    }
+    const evolutionData = await evolutionResponse.json();
+
+    // 진화체인을 트리 구조로 구성
+    const buildEvolutionTree = async (chain) => {
+      if (!chain) return null;
+      try {
+        // species URL에서 ID 추출
+        const speciesId = chain.species.url.split('/').filter(Boolean).pop();
+        // 중복 fetch 제거: getPokemonDetails로 통합
+        const pokemonInfo = await getPokemonDetails(speciesId);
+        const evolutionNode = {
+          id: pokemonInfo.id,
+          name: pokemonInfo.name,
+          koreanName: pokemonInfo.koreanName,
+          sprite: pokemonInfo.image,
+          types: pokemonInfo.types,
+          evolutionDetails: chain.evolution_details || [],
+          evolvesTo: []
+        };
+        if (chain.evolves_to && chain.evolves_to.length > 0) {
+          for (const evolution of chain.evolves_to) {
+            const childNode = await buildEvolutionTree(evolution);
+            if (childNode) {
+              evolutionNode.evolvesTo.push(childNode);
+            }
+          }
+        }
+        return evolutionNode;
+      } catch (error) {
+        console.error(`Error processing evolution chain for species ${chain.species.name}:`, error);
+        return null;
+      }
+    };
+    
+    const evolutionTree = await buildEvolutionTree(evolutionData.chain);
+    
+    // 트리 구조를 평면 배열로 변환 (분기 진화를 포함)
+    // flattenEvolutionTree 제거
+    // const evolutionChain = evolutionTree ? flattenEvolutionTree(evolutionTree) : [];
+    
+    // 진화체인이 비어있거나 현재 포켓몬만 있는 경우 처리
+    let resultTree = evolutionTree;
+    if (!resultTree) {
+      try {
+        // 현재 포켓몬 정보를 직접 가져와서 추가
+        const pokemonResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`);
+        if (!pokemonResponse.ok) {
+          console.error(`Failed to fetch current pokemon ${id}: ${pokemonResponse.status}`);
+        } else {
+          const pokemonData = await pokemonResponse.json();
+          const koreanName = speciesData.names.find(name => name.language.name === 'ko')?.name || pokemonData.name;
+          resultTree = {
+            id: pokemonData.id,
+            name: pokemonData.name,
+            koreanName: koreanName,
+            sprite: pokemonData.sprites.other['official-artwork'].front_default || pokemonData.sprites.front_default,
+            types: pokemonData.types.map(type => type.type.name),
+            evolutionDetails: [],
+            evolvesTo: []
+          };
+        }
+      } catch (error) {
+        console.error(`Error fetching current pokemon ${id}:`, error);
+      }
+    }
+    
+    const result = {
+      id,
+      evolutionChain: resultTree
+    };
+    
+    // 캐시에 저장 (30분간 유효)
+    setCacheWithExpiry(evolutionCache, cacheKey, result, 30 * 60 * 1000);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Error fetching evolution chain:', error);
+    res.status(500).json({ error: 'Failed to fetch evolution chain' });
   }
 });
 

@@ -39,11 +39,14 @@ function PokemonDetail() {
   const [pokemon, setPokemon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('abilities');
+  const [activeTab, setActiveTab] = useState('stats');
   const [selectedForm, setSelectedForm] = useState('default'); // 선택된 폼 상태 추가
   const [habitats, setHabitats] = useState(null);
   const [habitatLoading, setHabitatLoading] = useState(false);
   const [habitatError, setHabitatError] = useState(null);
+  const [evolutionChain, setEvolutionChain] = useState(null);
+  const [evolutionLoading, setEvolutionLoading] = useState(false);
+  const [evolutionError, setEvolutionError] = useState(null);
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -56,6 +59,9 @@ function PokemonDetail() {
         const data = await response.json();
         setPokemon(data);
         setSelectedForm('default'); // 포켓몬이 변경될 때 폼을 기본으로 리셋
+        setActiveTab('stats'); // 포켓몬이 변경될 때 탭을 기본으로 리셋
+        setEvolutionChain(null); // 진화체인 상태 리셋
+        setHabitats(null); // 서식지 상태 리셋
         setLoading(false);
       } catch (err) {
         setError('포켓몬 정보를 불러오는데 실패했습니다.');
@@ -86,6 +92,24 @@ function PokemonDetail() {
         });
     }
   }, [activeTab, id, habitats, habitatLoading]);
+
+  // 진화체인 탭 클릭 시 fetch
+  useEffect(() => {
+    if (activeTab === 'evolution' && !evolutionChain && !evolutionLoading) {
+      setEvolutionLoading(true);
+      setEvolutionError(null);
+      fetch(`${API_BASE_URL}/api/pokemons/${id}/evolution`)
+        .then(res => res.json())
+        .then(data => {
+          setEvolutionChain(data.evolutionChain);
+          setEvolutionLoading(false);
+        })
+        .catch(() => {
+          setEvolutionError('진화체인 정보를 불러오지 못했습니다.');
+          setEvolutionLoading(false);
+        });
+    }
+  }, [activeTab, id, evolutionChain, evolutionLoading]);
 
   // 현재 선택된 폼의 데이터 가져오기
   const getCurrentFormData = () => {
@@ -276,25 +300,37 @@ function PokemonDetail() {
         
         {/* 기본 정보 */}
         <div className="basic-info">
-          <div className="stat-row">
-            <span className="stat-label">키:</span>
-            <span className="stat-value">{currentFormData.height}m</span>
+          <div className="basic-info-row">
+            <div className="basic-info-item">
+              <span className="stat-label">키:</span>
+              <span className="stat-value">{currentFormData.height}m</span>
+            </div>
+            <div className="basic-info-item">
+              <span className="stat-label">몸무게:</span>
+              <span className="stat-value">{currentFormData.weight}kg</span>
+            </div>
           </div>
-          <div className="stat-row">
-            <span className="stat-label">몸무게:</span>
-            <span className="stat-value">{currentFormData.weight}kg</span>
+          
+          {/* 특성 정보 */}
+          <div className="abilities-section">
+            <h3>특성</h3>
+            <div className="abilities">
+              {currentFormData.abilities.map((ability, index) => (
+                <div key={index} className={`ability ${ability.isHidden ? 'hidden' : 'normal'}`}>
+                  <div className="ability-header">
+                    <span className="ability-name">{getKoreanAbilityName(ability.name)}</span>
+                    {ability.isHidden && <span className="hidden-badge">숨겨진 특성</span>}
+                  </div>
+                  <div className="ability-description">{ability.description}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* 탭 시스템 */}
         <div className="tab-container">
           <div className="tab-buttons">
-            <button 
-              className={`tab-button ${activeTab === 'abilities' ? 'active' : ''}`}
-              onClick={() => setActiveTab('abilities')}
-            >
-              특성
-            </button>
             <button 
               className={`tab-button ${activeTab === 'stats' ? 'active' : ''}`}
               onClick={() => setActiveTab('stats')}
@@ -313,23 +349,15 @@ function PokemonDetail() {
             >
               서식지
             </button>
+            <button 
+              className={`tab-button ${activeTab === 'evolution' ? 'active' : ''}`}
+              onClick={() => setActiveTab('evolution')}
+            >
+              진화체인
+            </button>
           </div>
           
           <div className="tab-content">
-            {activeTab === 'abilities' && (
-              <div className="abilities">
-                {currentFormData.abilities.map((ability, index) => (
-                  <div key={index} className={`ability ${ability.isHidden ? 'hidden' : 'normal'}`}>
-                    <div className="ability-header">
-                      <span className="ability-name">{getKoreanAbilityName(ability.name)}</span>
-                      {ability.isHidden && <span className="hidden-badge">숨겨진 특성</span>}
-                    </div>
-                    <div className="ability-description">{ability.description}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-            
             {activeTab === 'stats' && (
               <div className="stats-content">
                 {currentFormData.stats.map((stat) => (
@@ -407,9 +435,139 @@ function PokemonDetail() {
                 )}
               </div>
             )}
+            
+            {activeTab === 'evolution' && (
+              <div className="evolution-content">
+                {evolutionLoading && (
+                  <div className="loading">
+                    <div>진화체인 정보를 불러오는 중...</div>
+                  </div>
+                )}
+                {evolutionError && <div className="error">{evolutionError}</div>}
+                {!evolutionLoading && !evolutionError && evolutionChain && (
+                  (() => { console.log('evolutionChain:', evolutionChain); return null; })()
+                )}
+                {!evolutionLoading && !evolutionError && evolutionChain && (
+                  Array.isArray(evolutionChain) ? (
+                    evolutionChain.length === 0 ? (
+                      <div className="no-evolution">진화체인 정보가 없습니다.</div>
+                    ) : (
+                      <div className="evolution-chain">
+                        {evolutionChain.map((node, idx) => (
+                          <div key={idx} className="evolution-tree-node">
+                            <div className="evolution-pokemon">
+                              <img
+                                src={node.sprite}
+                                alt={node.koreanName || node.name || ''}
+                                className="evolution-sprite"
+                                onError={e => {
+                                  e.target.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png';
+                                }}
+                              />
+                              <div className="evolution-info">
+                                <h4 className="evolution-name">{
+  node.koreanName || node.name || ''
+  // 루가루암 등 폼 분기 노드라면 getFormDisplayName로 한글+폼명 조합
+}{node.formKoreanName ? (
+    <span className="form-name">{getFormDisplayName(node.formKoreanName, node.koreanName || node.name)}</span>
+  ) : null}</h4>
+                                <div className="evolution-types">
+                                  {(Array.isArray(node.types) ? node.types : []).map((type, typeIndex) => (
+                                    <span key={typeIndex} className={`type ${type}`}>
+                                      {getKoreanTypeName(type)}
+                                    </span>
+                                  ))}
+                                </div>
+                                {Array.isArray(node.evolutionDetails) && node.evolutionDetails.length > 0 && (
+                                  <div className="evolution-conditions">
+                                    {node.evolutionDetails.map((detail, detailIndex) => (
+                                      <span key={detailIndex} className="evolution-condition">
+                                        {getEvolutionConditionText(detail)}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            {idx < evolutionChain.length - 1 && (
+                              <div className="evolution-arrow">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M12 5v14M12 19l-5-5M12 19l5-5" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  ) : (typeof evolutionChain === 'object' ? (
+                    <div className="evolution-chain">
+                      <EvolutionTree node={evolutionChain} />
+                    </div>
+                  ) : (
+                    <div className="no-evolution">진화체인 정보가 없습니다.</div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function EvolutionTree({ node }) {
+  if (!node || typeof node !== 'object') return null;
+  // node.types가 없거나 배열이 아니면 빈 배열로 처리
+  const types = Array.isArray(node.types) ? node.types : [];
+  return (
+    <div className="evolution-tree-node">
+      <div className="evolution-pokemon">
+        <img
+          src={node.sprite}
+          alt={node.koreanName || node.name || ''}
+          className="evolution-sprite"
+          onError={e => {
+            e.target.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png';
+          }}
+        />
+        <div className="evolution-info">
+          <h4 className="evolution-name">{node.koreanName || node.name || ''}{node.formKoreanName ? (
+  <span className="form-name">({node.formKoreanName})</span>
+) : null}</h4>
+          <div className="evolution-types">
+            {types.map((type, typeIndex) => (
+              <span key={typeIndex} className={`type ${type}`}>
+                {getKoreanTypeName(type)}
+              </span>
+            ))}
+          </div>
+          {Array.isArray(node.evolutionDetails) && node.evolutionDetails.length > 0 && (
+            <div className="evolution-conditions">
+              {node.evolutionDetails.map((detail, detailIndex) => (
+                <span key={detailIndex} className="evolution-condition">
+                  {getEvolutionConditionText(detail)}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      {Array.isArray(node.evolvesTo) && node.evolvesTo.length > 0 && (
+        <>
+          <div className="evolution-arrow">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 5v14M12 19l-5-5M12 19l5-5" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <div className="evolution-children">
+            {node.evolvesTo.map((child, idx) => (
+              <EvolutionTree key={idx} node={child} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -1134,6 +1292,58 @@ function getKoreanAbilityName(ability) {
     'cacophony': '시끄러운소리',
   };
   return abilityNames[ability] || ability;
+}
+
+function getEvolutionConditionText(detail) {
+  const conditions = [];
+  
+  if (detail.min_level) {
+    conditions.push(`레벨 ${detail.min_level}`);
+  }
+  if (detail.min_happiness) {
+    conditions.push(`친밀도 ${detail.min_happiness}`);
+  }
+  if (detail.min_affection) {
+    conditions.push(`애정도 ${detail.min_affection}`);
+  }
+  if (detail.min_beauty) {
+    conditions.push(`아름다움 ${detail.min_beauty}`);
+  }
+  if (detail.held_item) {
+    conditions.push(`${detail.held_item.name} 지닌 상태`);
+  }
+  if (detail.item) {
+    conditions.push(`${detail.item.name} 사용`);
+  }
+  if (detail.known_move) {
+    conditions.push(`${detail.known_move.name} 기술 습득`);
+  }
+  if (detail.known_move_type) {
+    conditions.push(`${detail.known_move_type.name} 타입 기술 습득`);
+  }
+  if (detail.location) {
+    conditions.push(`${detail.location.name}에서`);
+  }
+  if (detail.time_of_day) {
+    conditions.push(`${detail.time_of_day} 시간대`);
+  }
+  if (detail.gender) {
+    conditions.push(detail.gender === 1 ? '수컷' : '암컷');
+  }
+  if (detail.relative_physical_stats) {
+    const stats = detail.relative_physical_stats;
+    if (stats === 1) conditions.push('공격 > 방어');
+    else if (stats === -1) conditions.push('방어 > 공격');
+    else if (stats === 0) conditions.push('공격 = 방어');
+  }
+  if (detail.needs_overworld_rain) {
+    conditions.push('비 오는 날');
+  }
+  if (detail.upside_down) {
+    conditions.push('3DS를 뒤집은 상태');
+  }
+  
+  return conditions.join(', ');
 }
 
 export default App
