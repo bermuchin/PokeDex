@@ -598,18 +598,21 @@ function PokemonList() {
 
   // 전체 포켓몬 한 번에 fetch (고성능 API 사용)
   const fetchPokemons = useCallback(async (generation) => {
+    const currentRequestGeneration = generation;
     setLoading(true);
+    setError(null);
     try {
-      // 고성능 API 사용 (fast=true로 기본 정보만 빠르게 가져오기)
-      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&fast=true&limit=1000&offset=0`);
-      if (!response.ok) throw new Error('Failed to fetch pokemons');
-      const data = await response.json();
-      
+      // 전국도감이면 limit=1100, 아니면 limit=1000
+      const limit = generation === 'all' ? 1100 : 1000;
+      const response = await fetchWithRetry(`${API_BASE_URL}/api/pokemons?generation=${generation}&fast=true&limit=${limit}&offset=0`);
+      if (selectedGeneration !== currentRequestGeneration) {
+        console.log(`Ignoring response for generation ${currentRequestGeneration} as current generation is ${selectedGeneration}`);
+        return;
+      }
       // API 응답 구조에 맞게 처리
-      const pokemonList = data.pokemons || data;
+      const pokemonList = response.pokemons || response;
       const unique = Array.from(new Map(pokemonList.map(p => [p.id, p])).values());
       unique.sort((a, b) => a.id - b.id);
-      
       // 캐시에 저장
       setPokemonCache(prev => new Map(prev).set(generation, unique));
       setPokemons(unique);
