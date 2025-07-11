@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom'
 import './App.css'
 
@@ -606,7 +606,7 @@ function PokemonList() {
     }
   }, [selectedGeneration]);
 
-  // 전체 포켓몬 한 번에 fetch (캐싱 적용)
+  // 전체 포켓몬 한 번에 fetch (고성능 API 사용)
   const fetchPokemons = useCallback(async (generation) => {
     // 캐시된 데이터가 있는지 확인
     if (pokemonCache.has(generation)) {
@@ -617,10 +617,14 @@ function PokemonList() {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&limit=2000`);
+      // 고성능 API 사용 (full=true로 전체 데이터 한 번에 가져오기)
+      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&full=true`);
       if (!response.ok) throw new Error('Failed to fetch pokemons');
       const data = await response.json();
-      const unique = Array.from(new Map(data.pokemons.map(p => [p.id, p])).values());
+      
+      // 고성능 API 응답 구조에 맞게 처리
+      const pokemonList = data.pokemons || data;
+      const unique = Array.from(new Map(pokemonList.map(p => [p.id, p])).values());
       unique.sort((a, b) => a.id - b.id);
       
       // 캐시에 저장 (크기 제한 적용)
@@ -653,16 +657,18 @@ function PokemonList() {
     }
   }, [selectedGeneration, pokemonCache, fetchPokemons]);
 
-  // 검색/필터 적용
-  const filteredPokemons = pokemons.filter(pokemon => {
-    const matchesName =
-      pokemon.koreanName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pokemon.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType =
-      selectedTypes.includes('all') ||
-      selectedTypes.every(selectedType => pokemon.types.includes(selectedType));
-    return matchesName && matchesType;
-  });
+  // 검색/필터 적용 (메모이제이션 추가)
+  const filteredPokemons = useMemo(() => {
+    return pokemons.filter(pokemon => {
+      const matchesName =
+        pokemon.koreanName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pokemon.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType =
+        selectedTypes.includes('all') ||
+        selectedTypes.every(selectedType => pokemon.types.includes(selectedType));
+      return matchesName && matchesType;
+    });
+  }, [pokemons, searchTerm, selectedTypes]);
 
   // 포켓몬 디테일에서 뒤로가기 시 스크롤 복원
   useEffect(() => {
@@ -759,7 +765,12 @@ function PokemonList() {
       <div className={`app generation-${selectedGeneration}`}>
         <button className="back-btn" onClick={handleBackToGeneration}>← 세대 선택으로 돌아가기</button>
         <h1>{getRegionName(selectedGeneration)}</h1>
-        <div className="loading">로딩 중...</div>
+        <div className="loading">
+          <div>포켓몬 데이터를 불러오는 중...</div>
+          <div style={{ fontSize: '0.9em', marginTop: '10px', opacity: 0.7 }}>
+            {selectedGeneration === 'all' ? '전국도감 (1025마리)' : `${selectedGeneration}세대`} 데이터를 준비하고 있습니다
+          </div>
+        </div>
       </div>
     );
   }

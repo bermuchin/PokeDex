@@ -14,10 +14,25 @@ const pokemonCache = new Map();
 const generationCache = new Map();
 const evolutionCache = new Map();
 
+// 세대별 전체 포켓몬 데이터 캐싱 (최대 3개 세대만 캐싱)
+const generationPokemonCache = new Map();
+const MAX_GENERATION_CACHE_SIZE = 3;
+
 // 캐시 set/만료 함수
 function setCacheWithExpiry(cache, key, value, ttlMs) {
   cache.set(key, value);
   setTimeout(() => cache.delete(key), ttlMs);
+}
+
+// 세대 캐시 크기 제한 함수
+function limitGenerationCacheSize(cache, maxSize = MAX_GENERATION_CACHE_SIZE) {
+  if (cache.size > maxSize) {
+    const entries = Array.from(cache.entries());
+    const newCache = new Map(entries.slice(-maxSize));
+    console.log(`🗑️ Cleared old generation cache entries. Current size: ${newCache.size}`);
+    return newCache;
+  }
+  return cache;
 }
 
 // 폼 정보 fetch/파싱 유틸 함수 분리
@@ -130,8 +145,8 @@ async function getPokemonDetails(id) {
       })),
       forms: forms // 폼 정보 추가
     };
-    // 캐시에 저장 (30분간 유효)
-    setCacheWithExpiry(pokemonCache, cacheKey, pokemonInfo, 30 * 60 * 1000);
+    // 캐시에 저장 (2시간간 유효)
+    setCacheWithExpiry(pokemonCache, cacheKey, pokemonInfo, 2 * 60 * 60 * 1000);
     return pokemonInfo;
   } catch (error) {
     console.error(`Error fetching pokemon ${id}:`, error);
@@ -164,12 +179,82 @@ async function getGenerationPokemons(generation) {
       });
     }
 
-    // 캐시에 저장 (60분간 유효)
-    setCacheWithExpiry(generationCache, cacheKey, species, 60 * 60 * 1000);
+    // 캐시에 저장 (4시간간 유효)
+    setCacheWithExpiry(generationCache, cacheKey, species, 4 * 60 * 60 * 1000);
 
     return species;
   } catch (error) {
     console.error(`Error fetching generation ${generation}:`, error);
+    throw error;
+  }
+}
+
+// 세대별 전체 포켓몬 데이터를 한 번에 가져오는 함수
+async function getGenerationPokemonData(generation) {
+  const cacheKey = `generation_data_${generation}`;
+  
+  if (generationPokemonCache.has(cacheKey)) {
+    console.log(`📦 Using cached generation data: ${generation}`);
+    return generationPokemonCache.get(cacheKey);
+  }
+
+  console.log(`🔄 Fetching generation data: ${generation}`);
+  const startTime = Date.now();
+  
+  try {
+    const species = await getGenerationPokemons(generation);
+    
+    // 병렬로 모든 포켓몬 상세 정보 가져오기 (청크 단위로 처리)
+    const chunkSize = 50;
+    const allPokemonDetails = [];
+    
+    for (let i = 0; i < species.length; i += chunkSize) {
+      const chunk = species.slice(i, i + chunkSize);
+      const pokemonPromises = chunk.map(async (species) => {
+        const id = species.url.split('/').filter(Boolean).pop();
+        return await getPokemonDetails(id);
+      });
+      
+      const chunkResults = await Promise.all(pokemonPromises);
+      allPokemonDetails.push(...chunkResults);
+      
+      // 진행상황 로그 (개발용)
+      if (i % 100 === 0) {
+        console.log(`⏳ Generation ${generation}: ${i}/${species.length} processed`);
+      }
+    }
+    
+    // ID 순으로 정렬
+    allPokemonDetails.sort((a, b) => a.id - b.id);
+    
+    const result = {
+      generation,
+      pokemons: allPokemonDetails,
+      total: allPokemonDetails.length,
+      cached: true
+    };
+    
+    const endTime = Date.now();
+    console.log(`✅ Generation ${generation} loaded in ${endTime - startTime}ms (${allPokemonDetails.length} pokemon)`);
+    
+    // 캐시에 저장 (2시간간 유효, 크기 제한 적용)
+    generationPokemonCache.set(cacheKey, result);
+    setTimeout(() => generationPokemonCache.delete(cacheKey), 2 * 60 * 60 * 1000);
+    
+    // 캐시 크기 제한 적용
+    if (generationPokemonCache.size > MAX_GENERATION_CACHE_SIZE) {
+      const entries = Array.from(generationPokemonCache.entries());
+      const newCache = new Map(entries.slice(-MAX_GENERATION_CACHE_SIZE));
+      generationPokemonCache.clear();
+      entries.slice(-MAX_GENERATION_CACHE_SIZE).forEach(([key, value]) => {
+        generationPokemonCache.set(key, value);
+      });
+      console.log(`🗑️ Generation cache limited to ${MAX_GENERATION_CACHE_SIZE} entries`);
+    }
+    
+    return result;
+  } catch (error) {
+    console.error(`❌ Error fetching generation ${generation} data:`, error);
     throw error;
   }
 }
@@ -340,27 +425,31 @@ app.get('/', (req, res) => {
 
 // API 엔드포인트들
 
-// 1. 세대별 포켓몬 목록 (상세 정보 포함)
+// 1. 세대별 포켓몬 목록 (상세 정보 포함) - 고성능 버전
 app.get('/api/pokemons', async (req, res) => {
   try {
-    const { generation, limit = 50, offset = 0 } = req.query;
+    const { generation, limit = 50, offset = 0, full = false } = req.query;
     
     if (!generation) {
       return res.status(400).json({ error: 'generation parameter is required' });
     }
 
+    // full=true인 경우 전체 데이터를 한 번에 반환 (고성능)
+    if (full === 'true') {
+      const generationData = await getGenerationPokemonData(generation);
+      res.json(generationData);
+      return;
+    }
+
+    // 기존 페이지네이션 방식 (하위 호환성)
     const species = await getGenerationPokemons(generation);
     
     // offset과 limit을 정수로 변환
     const offsetInt = parseInt(offset);
     const limitInt = parseInt(limit);
     
-    // 페이지네이션 적용 - 범위 체크 추가
-    const startIndex = offsetInt;
-    const endIndex = offsetInt + limitInt;
-    
     // 범위가 유효한지 확인
-    if (startIndex >= species.length) {
+    if (offsetInt >= species.length) {
       return res.json({
         pokemons: [],
         total: species.length,
@@ -370,7 +459,7 @@ app.get('/api/pokemons', async (req, res) => {
       });
     }
     
-    const paginatedSpecies = species.slice(startIndex, endIndex);
+    const paginatedSpecies = species.slice(offsetInt, offsetInt + limitInt);
     
     // 캐시된 포켓몬과 새로 가져올 포켓몬 분리
     const pokemonPromises = paginatedSpecies.map(async (species) => {
@@ -487,6 +576,7 @@ app.get('/api/cache/status', (req, res) => {
   res.json({
     pokemonCacheSize: pokemonCache.size,
     generationCacheSize: generationCache.size,
+    generationPokemonCacheSize: generationPokemonCache.size,
     memoryUsage: process.memoryUsage()
   });
 });
@@ -495,6 +585,7 @@ app.get('/api/cache/status', (req, res) => {
 app.post('/api/cache/clear', (req, res) => {
   pokemonCache.clear();
   generationCache.clear();
+  generationPokemonCache.clear();
   res.json({ message: 'Cache cleared successfully' });
 });
 
@@ -967,11 +1058,13 @@ app.get('/api/pokemons/:id/evolution', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Pokemon API Server running on http://localhost:${PORT}`);
   console.log(`📚 Available endpoints:`);
-  console.log(`   GET /api/pokemons?generation=1&limit=50&offset=0`);
+  console.log(`   GET /api/pokemons?generation=1&full=true (고성능)`);
+  console.log(`   GET /api/pokemons?generation=1&limit=50&offset=0 (기존)`);
   console.log(`   GET /api/pokemons/ids?ids=1,2,3,4`);
   console.log(`   GET /api/pokemons/:id`);
   console.log(`   GET /api/generations`);
   console.log(`   GET /api/types`);
   console.log(`   GET /api/cache/status`);
   console.log(`   POST /api/cache/clear`);
+  console.log(`⚡ Performance: Use ?full=true for instant loading`);
 }); 
