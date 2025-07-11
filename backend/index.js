@@ -984,7 +984,7 @@ app.get('/api/pokemons/:id/evolution', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Pokemon API Server running on http://localhost:${PORT}`);
   console.log(`📚 Available endpoints:`);
-  console.log(`   GET /api/pokemons?generation=1&full=true (고성능)`);
+
   console.log(`   GET /api/pokemons?generation=1&limit=50&offset=0 (기존)`);
   console.log(`   GET /api/pokemons/ids?ids=1,2,3,4`);
   console.log(`   GET /api/pokemons/:id`);
