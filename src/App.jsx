@@ -604,7 +604,9 @@ function PokemonList() {
     try {
       // 전국도감이면 limit=1100, 아니면 limit=1000
       const limit = generation === 'all' ? 1100 : 1000;
-      const data = await fetchWithRetry(`${API_BASE_URL}/api/pokemons?generation=${generation}&fast=true&limit=${limit}&offset=0`);
+      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&fast=true&limit=${limit}&offset=0`);
+      if (!response.ok) throw new Error('Failed to fetch pokemons');
+      const data = await response.json();
       if (selectedGeneration !== currentRequestGeneration) {
         console.log(`Ignoring response for generation ${currentRequestGeneration} as current generation is ${selectedGeneration}`);
         return;
