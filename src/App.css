@@ -1026,8 +1026,8 @@ h1 {
     right: -20px;
   }
   .pokemon-detail-header img {
-    width: 200px;
-    height: 200px;
+    width: 180px;
+    height: 180px;
     margin: 0 auto;
     display: block;
   }
@@ -1238,8 +1238,8 @@ h1 {
     font-size: 1rem;
   }
   .pokemon-detail-header img {
-    width: 180px;
-    height: 180px;
+    width: 150px;
+    height: 150px;
   }
   .pokemon-detail-info h2 {
     font-size: 1.3rem;

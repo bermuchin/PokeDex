@@ -305,6 +305,14 @@ function getKoreanFormName(formName, pokemonId = null) {
     'hangry':'배고픈 모양',
     'single-strike-gmax': '일격의 태세 거다이맥스',
     'rapid-strike-gmax': '연격의 태세 거다이맥스',
+    'hero':'마이티폼',
+    'droopy':'늘어진 모습',
+    'stretchy':'뻗은 모습',
+    'wellspring-mask':'우물의 가면',
+    'hearthflame-mask':'화덕의 가면',
+    'cornerstone-mask':'주춧돌의 가면',
+    'terastal':'테라스탈폼',
+    'stellar':'스텔라폼',
     'default': '기본폼'
   };
   // 특정 포켓몬의 특수 폼 처리

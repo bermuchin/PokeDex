@@ -55,6 +55,7 @@ function PokemonDetail() {
         }
         const data = await response.json();
         setPokemon(data);
+        setSelectedForm('default'); // 포켓몬이 변경될 때 폼을 기본으로 리셋
         setLoading(false);
       } catch (err) {
         setError('포켓몬 정보를 불러오는데 실패했습니다.');
@@ -805,7 +806,6 @@ function getFormDisplayName(formName, pokemonName) {
   }
   
   // 화이트폼과 블랙폼은 앞에 접두사
-      // 화이트폼은 앞에 접두사
   if (formName === '화이트폼') {
     return `화이트 ${pokemonName}`;
   }
