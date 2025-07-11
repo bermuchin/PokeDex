@@ -492,9 +492,8 @@ function PokemonDetail() {
                             {idx < evolutionChain.length - 1 && (
                               <div className="evolution-arrow">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M12 5v14M12 19l-5-5M12 19l5-5" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="evolution-arrow-svg" style={{display: 'block'}}/>
+                                  <path d="M12 5v14M12 19l-5-5M12 19l5-5" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="evolution-arrow-svg"/>
                                 </svg>
-                                <span className="evolution-arrow-text">↓</span>
                               </div>
                             )}
                           </div>
@@ -559,9 +558,8 @@ function EvolutionTree({ node }) {
         <>
           <div className="evolution-arrow">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 5v14M12 19l-5-5M12 19l5-5" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="evolution-arrow-svg" style={{display: 'block'}}/>
+              <path d="M12 5v14M12 19l-5-5M12 19l5-5" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="evolution-arrow-svg"/>
             </svg>
-            <span className="evolution-arrow-text">↓</span>
           </div>
           <div className="evolution-children">
             {node.evolvesTo.map((child, idx) => (
