@@ -581,6 +581,19 @@ function PokemonList() {
   const [selectedTypes, setSelectedTypes] = useState(['all'])
   const [selectedGeneration, setSelectedGeneration] = useState(null)
   const [showDex, setShowDex] = useState(false)
+  
+  // 세대별 포켓몬 데이터 캐싱을 위한 상태 추가 (최대 5개 세대까지 캐싱)
+  const [pokemonCache, setPokemonCache] = useState(new Map())
+  
+  // 캐시 크기 제한 함수
+  const limitCacheSize = useCallback((cache, maxSize = 5) => {
+    if (cache.size > maxSize) {
+      const entries = Array.from(cache.entries());
+      const newCache = new Map(entries.slice(-maxSize));
+      return newCache;
+    }
+    return cache;
+  }, []);
 
   // URL에서 generation 파라미터 읽어서 초기 상태 설정
   useEffect(() => {
@@ -593,8 +606,15 @@ function PokemonList() {
     }
   }, [selectedGeneration]);
 
-  // 전체 포켓몬 한 번에 fetch
+  // 전체 포켓몬 한 번에 fetch (캐싱 적용)
   const fetchPokemons = useCallback(async (generation) => {
+    // 캐시된 데이터가 있는지 확인
+    if (pokemonCache.has(generation)) {
+      setPokemons(pokemonCache.get(generation));
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&limit=2000`);
@@ -602,21 +622,36 @@ function PokemonList() {
       const data = await response.json();
       const unique = Array.from(new Map(data.pokemons.map(p => [p.id, p])).values());
       unique.sort((a, b) => a.id - b.id);
+      
+      // 캐시에 저장 (크기 제한 적용)
+      setPokemonCache(prev => {
+        const newCache = new Map(prev).set(generation, unique);
+        return limitCacheSize(newCache);
+      });
       setPokemons(unique);
       setLoading(false);
     } catch (err) {
       setError('포켓몬 리스트를 불러오는데 실패했습니다.');
       setLoading(false);
     }
-  }, []);
+  }, [pokemonCache, limitCacheSize]);
 
-  // 세대/전국도감 선택 시 전체 fetch
+  // 세대/전국도감 선택 시 캐시 확인 후 fetch
   useEffect(() => {
     if (!selectedGeneration) return;
-    setPokemons([]);
     setError(null);
-    fetchPokemons(selectedGeneration);
-  }, [selectedGeneration, fetchPokemons]);
+    
+    // 캐시된 데이터가 있으면 바로 사용
+    if (pokemonCache.has(selectedGeneration)) {
+      console.log(`캐시된 데이터 사용: ${selectedGeneration}세대 (${pokemonCache.get(selectedGeneration).length}마리)`);
+      setPokemons(pokemonCache.get(selectedGeneration));
+      setLoading(false);
+    } else {
+      // 캐시된 데이터가 없으면 새로 가져오기
+      console.log(`새로운 데이터 요청: ${selectedGeneration}세대`);
+      fetchPokemons(selectedGeneration);
+    }
+  }, [selectedGeneration, pokemonCache, fetchPokemons]);
 
   // 검색/필터 적용
   const filteredPokemons = pokemons.filter(pokemon => {
@@ -646,7 +681,7 @@ function PokemonList() {
             params.delete('pokemonId');
             window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
           }
-        }, 100);
+        }, 200); // 로딩 시간을 고려하여 지연 시간 증가
       }
     }
   }, [filteredPokemons]);
@@ -665,7 +700,6 @@ function PokemonList() {
     setSearchTerm('');
     setSelectedTypes(['all']);
     setShowDex(true);
-    setPokemons([]);
     setError(null);
     navigate(`/?generation=${id}`);
   };
@@ -675,7 +709,6 @@ function PokemonList() {
     setSelectedGeneration(null);
     setSearchTerm('');
     setSelectedTypes(['all']);
-    setPokemons([]);
     setError(null);
     navigate('/');
   };
