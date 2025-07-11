@@ -601,7 +601,7 @@ function PokemonList() {
     setLoading(true);
     try {
       // 고성능 API 사용 (fast=true로 기본 정보만 빠르게 가져오기)
-      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&fast=true&limit=1000&offset=0`);
+      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&fast=true&limit=1100&offset=0`);
       if (!response.ok) throw new Error('Failed to fetch pokemons');
       const data = await response.json();
       
