@@ -215,6 +215,8 @@ async function prefetchAllGenerations() {
       const msUntil5am = getMsUntilNext5amKST();
       setCacheWithExpiry(generationPokemonCache, cacheKey, filteredDetails, msUntil5am);
       allPokemons = allPokemons.concat(filteredDetails);
+      // 진단 로그 추가
+      console.log(`[프리페치] 세대 ${gen} species 원본 개수: ${species.length}, 실제 캐시된 포켓몬 수: ${filteredDetails.length}`);
       console.log(`[프리페치] 세대 ${gen} 상세 목록 캐시 완료 (${filteredDetails.length}마리)`);
     } catch (e) {
       console.error(`[프리페치] 세대 ${gen} 상세 목록 캐시 실패:`, e);
@@ -437,7 +439,8 @@ app.get('/api/pokemons', async (req, res) => {
     }
     const offsetInt = parseInt(offset);
     const limitInt = parseInt(limit);
-    const paginated = pokemons.slice(offsetInt, offsetInt + limitInt);
+    // /api/pokemons에서 slice 방어적 처리
+    const paginated = pokemons.slice(offsetInt, Math.min(offsetInt + limitInt, pokemons.length));
     res.json({
       pokemons: paginated,
       total: pokemons.length,
