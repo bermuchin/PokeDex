@@ -181,9 +181,10 @@ async function fetchGenerationSpecies(generation) {
   }
 }
 
-// 프리페치 함수 분리 (상세 정보까지 캐싱)
+// 프리페치 함수 분리 (상세 정보까지 캐싱, 전국도감은 1~9세대 합성)
 async function prefetchAllGenerations() {
-  const generations = ['all', 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const generations = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  let allPokemons = [];
   for (const gen of generations) {
     try {
       const cacheKey = `generation_${gen}`;
@@ -213,11 +214,17 @@ async function prefetchAllGenerations() {
       const filteredDetails = pokemonDetails.filter(Boolean);
       const msUntil5am = getMsUntilNext5amKST();
       setCacheWithExpiry(generationPokemonCache, cacheKey, filteredDetails, msUntil5am);
+      allPokemons = allPokemons.concat(filteredDetails);
       console.log(`[프리페치] 세대 ${gen} 상세 목록 캐시 완료 (${filteredDetails.length}마리)`);
     } catch (e) {
       console.error(`[프리페치] 세대 ${gen} 상세 목록 캐시 실패:`, e);
     }
   }
+  // 전국도감(all)은 1~9세대 캐시를 합쳐서 중복 없이 생성
+  const uniqueAllPokemons = Array.from(new Map(allPokemons.map(p => [p.id, p])).values());
+  const msUntil5am = getMsUntilNext5amKST();
+  setCacheWithExpiry(generationPokemonCache, 'generation_all', uniqueAllPokemons, msUntil5am);
+  console.log(`[프리페치] 전국도감(all) 상세 목록 캐시 완료 (${uniqueAllPokemons.length}마리)`);
   console.log('[프리페치] 모든 세대 상세 목록 캐시 완료!');
 }
 
