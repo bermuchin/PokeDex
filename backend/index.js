@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const cron = require('node-cron');
+const pLimit = require('p-limit');
 
 const app = express();
 const PORT = 3002;
@@ -181,6 +182,35 @@ async function fetchGenerationSpecies(generation) {
   }
 }
 
+// 실패한 포켓몬만 1~2회 재시도하는 fetch 함수
+async function fetchPokemonDetailWithRetry(id, retries = 2) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const [pokemonResponse, speciesResponse] = await Promise.all([
+        fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`),
+        fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}/`)
+      ]);
+      const pokemonData = await pokemonResponse.json();
+      const speciesData = await speciesResponse.json();
+      const koreanName = speciesData.names.find(name => name.language.name === 'ko')?.name || pokemonData.name;
+      return {
+        id: pokemonData.id,
+        name: pokemonData.name,
+        koreanName,
+        image: pokemonData.sprites.other['official-artwork'].front_default || pokemonData.sprites.front_default,
+        types: pokemonData.types.map(type => type.type.name)
+      };
+    } catch (e) {
+      if (i === retries) {
+        console.error(`[프리페치] 포켓몬 ${id} fetch 실패 (최종)`);
+        return null;
+      }
+      // 잠깐 대기 후 재시도 (100ms)
+      await new Promise(res => setTimeout(res, 100));
+    }
+  }
+}
+
 // 프리페치 함수 분리 (상세 정보까지 캐싱, 전국도감은 1~9세대 합성)
 async function prefetchAllGenerations() {
   const generations = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -189,27 +219,11 @@ async function prefetchAllGenerations() {
     try {
       const cacheKey = `generation_${gen}`;
       const species = await fetchGenerationSpecies(gen);
-      // 각 포켓몬의 이름, 타입, 이미지만 미리 캐싱
-      const pokemonDetails = await Promise.all(species.map(async (s) => {
+      // 각 포켓몬의 이름, 타입, 이미지만 미리 캐싱 (실패한 포켓몬만 2회 재시도, 동시 20개 제한)
+      const limit = pLimit(20);
+      const pokemonDetails = await Promise.all(species.map(s => {
         const id = s.url.split('/').filter(Boolean).pop();
-        try {
-          const [pokemonResponse, speciesResponse] = await Promise.all([
-            fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`),
-            fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}/`)
-          ]);
-          const pokemonData = await pokemonResponse.json();
-          const speciesData = await speciesResponse.json();
-          const koreanName = speciesData.names.find(name => name.language.name === 'ko')?.name || pokemonData.name;
-          return {
-            id: pokemonData.id,
-            name: pokemonData.name,
-            koreanName,
-            image: pokemonData.sprites.other['official-artwork'].front_default || pokemonData.sprites.front_default,
-            types: pokemonData.types.map(type => type.type.name)
-          };
-        } catch (e) {
-          return null;
-        }
+        return limit(() => fetchPokemonDetailWithRetry(id, 2));
       }));
       const filteredDetails = pokemonDetails.filter(Boolean);
       const msUntil5am = getMsUntilNext5amKST();
