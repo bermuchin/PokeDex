@@ -181,21 +181,44 @@ async function fetchGenerationSpecies(generation) {
   }
 }
 
-// 프리페치 함수 분리
+// 프리페치 함수 분리 (상세 정보까지 캐싱)
 async function prefetchAllGenerations() {
   const generations = ['all', 1, 2, 3, 4, 5, 6, 7, 8, 9];
   for (const gen of generations) {
     try {
       const cacheKey = `generation_${gen}`;
       const species = await fetchGenerationSpecies(gen);
+      // 각 포켓몬의 이름, 타입, 이미지만 미리 캐싱
+      const pokemonDetails = await Promise.all(species.map(async (s) => {
+        const id = s.url.split('/').filter(Boolean).pop();
+        try {
+          const [pokemonResponse, speciesResponse] = await Promise.all([
+            fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`),
+            fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}/`)
+          ]);
+          const pokemonData = await pokemonResponse.json();
+          const speciesData = await speciesResponse.json();
+          const koreanName = speciesData.names.find(name => name.language.name === 'ko')?.name || pokemonData.name;
+          return {
+            id: pokemonData.id,
+            name: pokemonData.name,
+            koreanName,
+            image: pokemonData.sprites.other['official-artwork'].front_default || pokemonData.sprites.front_default,
+            types: pokemonData.types.map(type => type.type.name)
+          };
+        } catch (e) {
+          return null;
+        }
+      }));
+      const filteredDetails = pokemonDetails.filter(Boolean);
       const msUntil5am = getMsUntilNext5amKST();
-      setCacheWithExpiry(generationCache, cacheKey, species, msUntil5am);
-      console.log(`[프리페치] 세대 ${gen} 캐시 갱신 완료 (${species.length}마리)`);
+      setCacheWithExpiry(generationPokemonCache, cacheKey, filteredDetails, msUntil5am);
+      console.log(`[프리페치] 세대 ${gen} 상세 목록 캐시 완료 (${filteredDetails.length}마리)`);
     } catch (e) {
-      console.error(`[프리페치] 세대 ${gen} 캐시 갱신 실패:`, e);
+      console.error(`[프리페치] 세대 ${gen} 상세 목록 캐시 실패:`, e);
     }
   }
-  console.log('[프리페치] 모든 세대 캐시 갱신 완료!');
+  console.log('[프리페치] 모든 세대 상세 목록 캐시 완료!');
 }
 
 // 매일 새벽 5시(KST)에 세대별 포켓몬 목록 캐시 미리 생성
@@ -394,46 +417,23 @@ app.get('/', (req, res) => {
 // 1. 세대별 포켓몬 목록 (상세 정보 포함) - 고성능 버전
 app.get('/api/pokemons', async (req, res) => {
   try {
-    const { generation, limit = 50, offset = 0, full = false } = req.query;
-    
+    const { generation, limit = 50, offset = 0 } = req.query;
     if (!generation) {
       return res.status(400).json({ error: 'generation parameter is required' });
     }
-
-
-
-    // 기존 페이지네이션 방식 (하위 호환성)
-    const species = await getGenerationPokemons(generation);
-    
-    // offset과 limit을 정수로 변환
+    const cacheKey = `generation_${generation}`;
+    let pokemons = generationPokemonCache.get(cacheKey);
+    if (!pokemons) {
+      // 캐시가 없으면 프리페치 실행 후 재시도
+      await prefetchAllGenerations();
+      pokemons = generationPokemonCache.get(cacheKey) || [];
+    }
     const offsetInt = parseInt(offset);
     const limitInt = parseInt(limit);
-    
-    // 범위가 유효한지 확인
-    if (offsetInt >= species.length) {
-      return res.json({
-        pokemons: [],
-        total: species.length,
-        limit: limitInt,
-        offset: offsetInt,
-        cached: 0
-      });
-    }
-    
-    const paginatedSpecies = species.slice(offsetInt, offsetInt + limitInt);
-    
-    // 캐시된 포켓몬과 새로 가져올 포켓몬 분리
-    const pokemonPromises = paginatedSpecies.map(async (species) => {
-      const id = species.url.split('/').filter(Boolean).pop();
-      return await getPokemonDetails(id);
-    });
-    
-    // 병렬 처리로 상세 정보 가져오기
-    const pokemonDetails = await Promise.all(pokemonPromises);
-
+    const paginated = pokemons.slice(offsetInt, offsetInt + limitInt);
     res.json({
-      pokemons: pokemonDetails,
-      total: species.length,
+      pokemons: paginated,
+      total: pokemons.length,
       limit: limitInt,
       offset: offsetInt
     });
