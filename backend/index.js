@@ -3,6 +3,8 @@ const cors = require('cors');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const cron = require('node-cron');
 const pLimit = require('p-limit').default;
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('./cache.db');
 
 const app = express();
 const PORT = 3002;
@@ -18,10 +20,61 @@ const evolutionCache = new Map();
 // 세대별 전체 포켓몬 데이터 캐싱
 const generationPokemonCache = new Map();
 
-// 캐시 set/만료 함수
-function setCacheWithExpiry(cache, key, value, ttlMs) {
+// 프리페치 상태 추적을 위한 플래그 추가
+let isPrefetching = false;
+let prefetchCompleted = false;
+
+db.run(`CREATE TABLE IF NOT EXISTS pokemons_cache (
+  generation TEXT PRIMARY KEY,
+  data TEXT,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
+
+function saveCacheToDB(generation, data) {
+  db.run(
+    `INSERT OR REPLACE INTO pokemons_cache (generation, data, updated_at) VALUES (?, ?, datetime('now'))`,
+    [generation, JSON.stringify(data)],
+    (err) => { if (err) console.error('DB 캐시 저장 오류:', err); }
+  );
+}
+
+function loadCacheFromDB(generation) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      `SELECT data FROM pokemons_cache WHERE generation = ?`,
+      [generation],
+      (err, row) => {
+        if (err) {
+          console.error('DB 캐시 불러오기 오류:', err);
+          resolve(null);
+        } else {
+          resolve(row ? JSON.parse(row.data) : null);
+        }
+      }
+    );
+  });
+}
+
+async function loadAllCacheFromDB() {
+  return new Promise((resolve, reject) => {
+    db.all(`SELECT generation, data FROM pokemons_cache`, [], (err, rows) => {
+      if (err) {
+        console.error('DB 전체 캐시 불러오기 오류:', err);
+        resolve();
+      } else {
+        rows.forEach(row => {
+          generationPokemonCache.set(row.generation, JSON.parse(row.data));
+        });
+        resolve();
+      }
+    });
+  });
+}
+
+// 캐시 set/만료 함수 수정 (TTL 제거)
+function setCache(cache, key, value) {
   cache.set(key, value);
-  setTimeout(() => cache.delete(key), ttlMs);
+  saveCacheToDB(key, value); // DB에도 저장
 }
 
 // 다음 새벽 5시(KST)까지 남은 ms 계산 함수 추가
@@ -39,12 +92,12 @@ function getMsUntilNext5amKST() {
 }
 
 // 캐시 상태 확인 함수
-function logCacheStatus() {
-  console.log(`📊 Cache Status:`);
-  console.log(`   - Generation cache: ${generationCache.size} entries`);
-  console.log(`   - Generation Pokemon cache: ${generationPokemonCache.size} entries`);
-  console.log(`   - Evolution cache: ${evolutionCache.size} entries`);
-}
+// function logCacheStatus() {
+//   console.log(`📊 Cache Status:`);
+//   console.log(`   - Generation cache: ${generationCache.size} entries`);
+//   console.log(`   - Generation Pokemon cache: ${generationPokemonCache.size} entries`);
+//   console.log(`   - Evolution cache: ${evolutionCache.size} entries`);
+// }
 
 // 폼 정보 fetch/파싱 유틸 함수 분리
 async function getPokemonForms(pokemonData, speciesData) {
@@ -227,7 +280,7 @@ async function prefetchAllGenerations() {
       }));
       const filteredDetails = pokemonDetails.filter(Boolean);
       const msUntil5am = getMsUntilNext5amKST();
-      setCacheWithExpiry(generationPokemonCache, cacheKey, filteredDetails, msUntil5am);
+      setCache(generationPokemonCache, cacheKey, filteredDetails);
       allPokemons = allPokemons.concat(filteredDetails);
       // 진단 로그 추가
       console.log(`[프리페치] 세대 ${gen} species 원본 개수: ${species.length}, 실제 캐시된 포켓몬 수: ${filteredDetails.length}`);
@@ -239,37 +292,13 @@ async function prefetchAllGenerations() {
   // 전국도감(all)은 1~9세대 캐시를 합쳐서 중복 없이 생성
   const uniqueAllPokemons = Array.from(new Map(allPokemons.map(p => [p.id, p])).values());
   const msUntil5am = getMsUntilNext5amKST();
-  setCacheWithExpiry(generationPokemonCache, 'generation_all', uniqueAllPokemons, msUntil5am);
+  setCache(generationPokemonCache, 'generation_all', uniqueAllPokemons);
   console.log(`[프리페치] 전국도감(all) 상세 목록 캐시 완료 (${uniqueAllPokemons.length}마리)`);
   console.log('[프리페치] 모든 세대 상세 목록 캐시 완료!');
 }
 
 // 매일 새벽 5시(KST)에 세대별 포켓몬 목록 캐시 미리 생성
 cron.schedule('0 0 5 * * *', prefetchAllGenerations, { timezone: 'Asia/Seoul' });
-
-// 세대별 포켓몬 목록 가져오기
-async function getGenerationPokemons(generation) {
-  const cacheKey = `generation_${generation}`;
-  
-  if (generationCache.has(cacheKey)) {
-    return generationCache.get(cacheKey);
-  }
-
-  try {
-    const species = await fetchGenerationSpecies(generation);
-    
-    // 캐시에 저장 (다음 새벽 5시(KST)까지 유효)
-    const msUntil5am = getMsUntilNext5amKST();
-    setCacheWithExpiry(generationCache, cacheKey, species, msUntil5am);
-
-    return species;
-  } catch (error) {
-    console.error(`Error fetching generation ${generation}:`, error);
-    throw error;
-  }
-}
-
-
 
 function getKoreanFormName(formName, pokemonId = null) {
   if (pokemonId) {
@@ -444,13 +473,41 @@ app.get('/api/pokemons', async (req, res) => {
     if (!generation) {
       return res.status(400).json({ error: 'generation parameter is required' });
     }
+    
     const cacheKey = `generation_${generation}`;
     let pokemons = generationPokemonCache.get(cacheKey);
+
     if (!pokemons) {
-      // 캐시가 없으면 프리페치 실행 후 재시도
-      await prefetchAllGenerations();
-      pokemons = generationPokemonCache.get(cacheKey) || [];
+      // DB에서 불러오기 시도
+      pokemons = await loadCacheFromDB(cacheKey);
+      if (pokemons) {
+        generationPokemonCache.set(cacheKey, pokemons);
+      }
     }
+    
+    if (!pokemons) {
+      // 캐시가 없으면 프리페치 대신 기존 방식으로 데이터 가져오기
+      console.log(`[API] 캐시 미스: ${generation}세대, 기존 방식으로 데이터 가져오기`);
+      
+      try {
+        const species = await fetchGenerationSpecies(generation);
+        const limit = pLimit(20);
+        const pokemonDetails = await Promise.all(species.map(s => {
+          const id = s.url.split('/').filter(Boolean).pop();
+          return limit(() => fetchPokemonDetailWithRetry(id, 2));
+        }));
+        pokemons = pokemonDetails.filter(Boolean);
+        
+        // 캐시에 저장
+        const msUntil5am = getMsUntilNext5amKST();
+        setCache(generationPokemonCache, cacheKey, pokemons);
+        console.log(`[API] ${generation}세대 데이터 캐시 완료 (${pokemons.length}마리)`);
+      } catch (error) {
+        console.error(`[API] ${generation}세대 데이터 가져오기 실패:`, error);
+        return res.status(500).json({ error: 'Failed to fetch pokemons' });
+      }
+    }
+    
     const offsetInt = parseInt(offset);
     const limitInt = parseInt(limit);
     // /api/pokemons에서 slice 방어적 처리
@@ -558,7 +615,6 @@ app.get('/api/types', (req, res) => {
 // 6. 캐시 상태 확인
 app.get('/api/cache/status', (req, res) => {
   res.json({
-    generationCacheSize: generationCache.size,
     generationPokemonCacheSize: generationPokemonCache.size,
     evolutionCacheSize: evolutionCache.size,
     memoryUsage: process.memoryUsage(),
@@ -568,7 +624,6 @@ app.get('/api/cache/status', (req, res) => {
 
 // 7. 캐시 초기화
 app.post('/api/cache/clear', (req, res) => {
-  generationCache.clear();
   generationPokemonCache.clear();
   res.json({ message: 'Cache cleared successfully' });
 });
@@ -797,7 +852,7 @@ function getAbilityDescription(abilityName) {
     'psychic-surge': '배틀 시작 시 사이킥필드를 만든다.',
     'grassy-surge': '배틀 시작 시 그래스필드를 만든다.',
     'misty-surge': '배틀 시작 시 미스트필드를 만든다.',
-    'intrepid-sword': '등장하자마자자 공격이 올라간다.',
+    'intrepid-sword': '등장하자마자 공격이 올라간다.',
     'dauntless-shield': '등장하자마자 방어가 올라간다.',
     'libero': '기술을 사용할 때 자신의 타입이 그 기술의 타입이 된다.',
     'ball-fetch': '포켓볼을 사용하면 다시 가질 수 있다.',
@@ -948,7 +1003,7 @@ app.get('/api/pokemons/:id/evolution', async (req, res) => {
     
     if (!speciesData.evolution_chain?.url) {
       const result = { evolutionChain: [] };
-      setCacheWithExpiry(evolutionCache, cacheKey, result, 30 * 60 * 1000); // 30분 캐시
+      setCache(evolutionCache, cacheKey, result, 30 * 60 * 1000); // 30분 캐시
       return res.json(result);
     }
 
@@ -1029,7 +1084,7 @@ app.get('/api/pokemons/:id/evolution', async (req, res) => {
     };
     
     // 캐시에 저장 (30분간 유효)
-    setCacheWithExpiry(evolutionCache, cacheKey, result, 30 * 60 * 1000);
+    setCache(evolutionCache, cacheKey, result, 30 * 60 * 1000);
     
     res.json(result);
   } catch (error) {
@@ -1038,8 +1093,28 @@ app.get('/api/pokemons/:id/evolution', async (req, res) => {
   }
 });
 
-// 서버 시작 시 프리페치 한 번 실행
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+// 서버 시작 시 DB에서 캐시 불러오고 prefetchAllGenerations 실행
+app.listen(PORT, async () => {
+  console.log(`🚀 Server listening on port ${PORT}`);
+  
+  // cron 스케줄러 상태 로그
+  const now = new Date();
+  const nowKST = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const nextCronTime = new Date(now);
+  nextCronTime.setUTCHours(20, 0, 0, 0);
+  if (now >= nextCronTime) {
+    nextCronTime.setDate(nextCronTime.getDate() + 1);
+  }
+  
+  console.log(`📅 Cron Scheduler Status:`);
+  console.log(`   - Current UTC: ${now.toISOString()}`);
+  console.log(`   - Current KST: ${nowKST.toISOString()}`);
+  console.log(`   - Next cron execution: ${nextCronTime.toISOString()}`);
+  console.log(`   - Cron expression: 0 0 5 * * * (KST 05:00)`);
+  console.log(`   - Timezone: Asia/Seoul`);
+  
+  console.log(`🔄 DB에서 캐시 불러오는 중...`);
+  await loadAllCacheFromDB();
+  console.log(`🔄 Starting initial prefetch...`);
   prefetchAllGenerations();
 }); 
