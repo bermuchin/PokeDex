@@ -1094,7 +1094,7 @@ app.get('/api/pokemons/:id/evolution', async (req, res) => {
 });
 
 // 서버 시작 시 DB에서 캐시 불러오고 prefetchAllGenerations 실행
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
   console.log(`🚀 Server listening on port ${PORT}`);
   
   // cron 스케줄러 상태 로그
@@ -1113,8 +1113,11 @@ app.listen(PORT, async () => {
   console.log(`   - Cron expression: 0 0 5 * * * (KST 05:00)`);
   console.log(`   - Timezone: Asia/Seoul`);
   
-  console.log(`🔄 DB에서 캐시 불러오는 중...`);
-  await loadAllCacheFromDB();
-  console.log(`🔄 Starting initial prefetch...`);
-  prefetchAllGenerations();
+  // 비동기 초기화는 따로 실행
+  (async () => {
+    console.log(`🔄 DB에서 캐시 불러오는 중...`);
+    await loadAllCacheFromDB();
+    console.log(`🔄 Starting initial prefetch...`);
+    prefetchAllGenerations();
+  })();
 }); 
