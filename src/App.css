@@ -6,7 +6,6 @@ body, #root {
   margin: 0;
   padding: 0;
   background: #fff;
-  overflow-x: hidden;
   font-weight: 300;
 }
 
@@ -56,7 +55,6 @@ body, #root {
   width: 100%;
   padding: 10px;
   box-sizing: border-box;
-  overflow-x: hidden;
   background-size: cover !important;
   background-attachment: fixed !important;
   transition: background-size 0.5s cubic-bezier(.4,0,.2,1);
