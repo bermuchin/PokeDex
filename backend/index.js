@@ -7,7 +7,7 @@ const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./cache.db');
 
 const app = express();
-const PORT = 3002;
+const PORT = process.env.PORT || 3002;
 
 // 미들웨어 설정
 app.use(cors());
@@ -1207,7 +1207,7 @@ app.get('/api/pokemons/:id/moves', async (req, res) => {
 });
 
 // 서버 시작 시 DB에서 캐시 불러오고 prefetchAllGenerations 실행
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server listening on port ${PORT}`);
   
   // cron 스케줄러 상태 로그
