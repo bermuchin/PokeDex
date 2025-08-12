@@ -1230,7 +1230,11 @@ app.listen(PORT, '0.0.0.0', () => {
   (async () => {
     console.log(`🔄 DB에서 캐시 불러오는 중...`);
     await loadAllCacheFromDB();
-    console.log(`🔄 Starting initial prefetch...`);
-    prefetchAllGenerations();
+    console.log(`✅ DB 캐시 로드 완료. 5초 후 초기 데이터 프리페치를 시작합니다.`);
+    // Render와 같은 배포 환경에서 시작 타임아웃을 방지하기 위해 약간의 지연 후 프리페치를 시작합니다.
+    setTimeout(() => {
+      console.log(`🔄 Starting initial prefetch...`);
+      prefetchAllGenerations();
+    }, 5000); // 5초 지연
   })();
 });
