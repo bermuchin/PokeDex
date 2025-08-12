@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const cron = require('node-cron');
-const pLimit = require('p-limit').default;
+const pLimit = require('p-limit');
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./cache.db');
 
