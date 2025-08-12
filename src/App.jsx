@@ -17,6 +17,32 @@ const GENERATION_LIST = [
   { id: 9, label: '9세대(팔데아)' },
 ]
 
+const KOREAN_VERSION_NAMES = {
+  'scarlet-violet': '스칼렛/바이올렛',
+  'legends-arceus': '레전드 아르세우스',
+  'brilliant-diamond-and-shining-pearl': '브다샤펄',
+  'sword-shield': '소드/실드',
+  'lets-go-pikachu-lets-go-eevee': '레츠고! 피카츄/이브이',
+  'ultra-sun-ultra-moon': '울트라썬/울트라문',
+  'sun-moon': '썬/문',
+  'omega-ruby-alpha-sapphire': '오메가루비/알파사파이어',
+  'x-y': 'X/Y',
+  'black-2-white-2': '블랙2/화이트2',
+  'black-white': '블랙/화이트',
+  'heartgold-soulsilver': '하트골드/소울실버',
+  'platinum': '플래티넘',
+  'diamond-pearl': '다이아몬드/펄',
+  'firered-leafgreen': '파이어레드/리프그린',
+  'emerald': '에메랄드',
+  'ruby-sapphire': '루비/사파이어',
+  'crystal': '크리스탈',
+  'gold-silver': '금/은',
+  'yellow': '피카츄',
+  'red-blue': '레드/블루',
+};
+
+const VERSION_ORDER = Object.keys(KOREAN_VERSION_NAMES);
+
 const getRegionName = (generationId) => {
   const regionNames = {
     'all': '범박사의 포켓몬 도감',
@@ -51,6 +77,10 @@ function PokemonDetail() {
   const [movesLoading, setMovesLoading] = useState(false);
   const [movesError, setMovesError] = useState(null);
   const [activeMoveCategory, setActiveMoveCategory] = useState('level-up');
+  const [availableVersions, setAvailableVersions] = useState([]);
+  const [selectedVersion, setSelectedVersion] = useState('');
+  const [selectedMove, setSelectedMove] = useState(null);
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -68,6 +98,8 @@ function PokemonDetail() {
         setHabitats(null); // 서식지 상태 리셋
         setMoves(null); // 기술 상태 리셋
         setActiveMoveCategory('level-up'); // 기술 카테고리 리셋
+        setAvailableVersions([]); // 버전 목록 리셋
+        setSelectedVersion(''); // 선택된 버전 리셋
         setLoading(false);
       } catch (err) {
         setError('포켓몬 정보를 불러오는데 실패했습니다.');
@@ -117,7 +149,7 @@ function PokemonDetail() {
     }
   }, [activeTab, id, evolutionChain, evolutionLoading]);
 
-  // 기술 탭 클릭 시 fetch
+  // 기술 탭 클릭 시 fetch 및 버전 설정
   useEffect(() => {
     if (activeTab === 'moves' && !moves && !movesLoading) {
       setMovesLoading(true);
@@ -126,6 +158,18 @@ function PokemonDetail() {
         .then(res => res.json())
         .then(data => {
           setMoves(data.moves);
+          const fetchedVersions = Object.keys(data.moves);
+          const sortedVersions = fetchedVersions.sort((a, b) => {
+            const indexA = VERSION_ORDER.indexOf(a);
+            const indexB = VERSION_ORDER.indexOf(b);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+          });
+          setAvailableVersions(sortedVersions);
+          if (sortedVersions.length > 0) {
+            setSelectedVersion(sortedVersions[0]);
+          }
           setMovesLoading(false);
         })
         .catch(() => {
@@ -475,9 +519,6 @@ function PokemonDetail() {
                 )}
                 {evolutionError && <div className="error">{evolutionError}</div>}
                 {!evolutionLoading && !evolutionError && evolutionChain && (
-                  (() => { console.log('evolutionChain:', evolutionChain); return null; })()
-                )}
-                {!evolutionLoading && !evolutionError && evolutionChain && (
                   Array.isArray(evolutionChain) ? (
                     evolutionChain.length === 0 ? (
                       <div className="no-evolution">진화트리 정보가 없습니다.</div>
@@ -546,30 +587,19 @@ function PokemonDetail() {
                 {movesError && <div className="error">{movesError}</div>}
                 {!movesLoading && !movesError && moves && (
                   <>
-                    <div className="move-category-buttons">
-                      <button 
-                        className={activeMoveCategory === 'level-up' ? 'active' : ''}
-                        onClick={() => setActiveMoveCategory('level-up')}>
-                        레벨업
-                      </button>
-                      <button 
-                        className={activeMoveCategory === 'machine' ? 'active' : ''}
-                        onClick={() => setActiveMoveCategory('machine')}>
-                        기술머신
-                      </button>
-                      <button 
-                        className={activeMoveCategory === 'egg' ? 'active' : ''}
-                        onClick={() => setActiveMoveCategory('egg')}>
-                        유전기
-                      </button>
-                      <button 
-                        className={activeMoveCategory === 'tutor' ? 'active' : ''}
-                        onClick={() => setActiveMoveCategory('tutor')}>
-                        가르침
-                      </button>
+                    <div className="move-filters">
+                      <select value={selectedVersion} onChange={(e) => setSelectedVersion(e.target.value)}>
+                        {availableVersions.map(v => <option key={v} value={v}>{KOREAN_VERSION_NAMES[v] || v.toUpperCase().replace('-', ' ')}</option>)}
+                      </select>
+                      <div className="move-category-buttons">
+                        <button className={activeMoveCategory === 'level-up' ? 'active' : ''} onClick={() => setActiveMoveCategory('level-up')}>레벨업</button>
+                        <button className={activeMoveCategory === 'machine' ? 'active' : ''} onClick={() => setActiveMoveCategory('machine')}>기술머신</button>
+                        <button className={activeMoveCategory === 'egg' ? 'active' : ''} onClick={() => setActiveMoveCategory('egg')}>유전기</button>
+                        <button className={activeMoveCategory === 'tutor' ? 'active' : ''} onClick={() => setActiveMoveCategory('tutor')}>가르침</button>
+                      </div>
                     </div>
                     <div className="moves-list">
-                      {moves[activeMoveCategory] && moves[activeMoveCategory].length > 0 ? (
+                      {selectedVersion && moves[selectedVersion] && moves[selectedVersion][activeMoveCategory] && moves[selectedVersion][activeMoveCategory].length > 0 ? (
                         <table>
                           <thead>
                             <tr>
@@ -582,8 +612,8 @@ function PokemonDetail() {
                             </tr>
                           </thead>
                           <tbody>
-                            {moves[activeMoveCategory].map((move, index) => (
-                              <tr key={index}>
+                            {moves[selectedVersion][activeMoveCategory].map((move, index) => (
+                              <tr key={index} onClick={() => { setSelectedMove(move); setIsMoveModalOpen(true); }}>
                                 {activeMoveCategory === 'level-up' && <td>{move.level}</td>}
                                 <td>{move.koreanName}</td>
                                 <td><span className={`type ${move.type}`}>{getKoreanTypeName(move.type)}</span></td>
@@ -605,6 +635,12 @@ function PokemonDetail() {
           </div>
         </div>
       </div>
+      {isMoveModalOpen && selectedMove && (
+        <MoveDetailModal
+          move={selectedMove}
+          onClose={() => setIsMoveModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -693,7 +729,7 @@ function PokemonList() {
     setLoading(true);
     try {
       // 고성능 API 사용 (fast=true로 기본 정보만 빠르게 가져오기)
-      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&fast=true&limit=1100&offset=0`);
+      const response = await fetch(`${API_BASE_URL}/api/pokemons?generation=${generation}&limit=1100&offset=0`);
       if (!response.ok) throw new Error('Failed to fetch pokemons');
       const data = await response.json();
       
@@ -1411,6 +1447,41 @@ function getKoreanAbilityName(ability) {
     'cacophony': '시끄러운소리',
   };
   return abilityNames[ability] || ability;
+}
+
+function MoveDetailModal({ move, onClose }) {
+  // 모달 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (event.target.classList.contains('move-modal-overlay')) {
+        onClose();
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
+  return (
+    <div className="move-modal-overlay">
+      <div className="move-modal-content">
+        <button className="move-modal-close" onClick={onClose}>×</button>
+        <h2 className={`type-${move.type}`}>{move.koreanName}</h2>
+        <div className="move-modal-details">
+          <p><strong>타입:</strong> <span className={`type ${move.type}`}>{getKoreanTypeName(move.type)}</span></p>
+          <p><strong>분류:</strong> {move.damage_class}</p>
+          <p><strong>위력:</strong> {move.power || '-'}</p>
+          <p><strong>명중률:</strong> {move.accuracy || '-'}</p>
+          <p><strong>PP:</strong> {move.pp || '-'}</p>
+        </div>
+        <div className="move-modal-description">
+          <h3>기술 설명</h3>
+          <p>{move.koreanShortEffect || '설명 없음'}</p> // Display koreanShortEffect, with fallback
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function getEvolutionConditionText(detail) {

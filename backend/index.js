@@ -92,14 +92,6 @@ function getMsUntilNext5amKST() {
   return next5amKST - nowKST;
 }
 
-// 캐시 상태 확인 함수
-// function logCacheStatus() {
-//   console.log(`📊 Cache Status:`);
-//   console.log(`   - Generation cache: ${generationCache.size} entries`);
-//   console.log(`   - Generation Pokemon cache: ${generationPokemonCache.size} entries`);
-//   console.log(`   - Evolution cache: ${evolutionCache.size} entries`);
-// }
-
 // 폼 정보 fetch/파싱 유틸 함수 분리
 async function getPokemonForms(pokemonData, speciesData) {
   const forms = [];
@@ -1131,12 +1123,7 @@ app.get('/api/pokemons/:id/moves', async (req, res) => {
     }));
     await Promise.all(moveDetailPromises);
 
-    const movesByCategory = {
-      'level-up': new Map(),
-      'machine': new Map(),
-      'egg': new Map(),
-      'tutor': new Map()
-    };
+    const movesByVersion = {};
 
     for (const pokemonMove of pokemonData.moves) {
       const moveData = moveDetailsCache.get(pokemonMove.move.url);
@@ -1146,8 +1133,36 @@ app.get('/api/pokemons/:id/moves', async (req, res) => {
       const moveType = moveData.type.name;
 
       for (const detail of pokemonMove.version_group_details) {
+        const version = detail.version_group.name;
+        if (!movesByVersion[version]) {
+          movesByVersion[version] = {
+            'level-up': [],
+            'machine': [],
+            'egg': [],
+            'tutor': []
+          };
+        }
+
         const learnMethod = detail.move_learn_method.name;
         const level = detail.level_learned_at;
+
+        let koreanShortEffectEntry = moveData.flavor_text_entries.find(entry =>
+          entry.language.name === 'ko' && entry.version_group.name === detail.version_group.name
+        );
+
+        // If no specific version_group Korean entry, try to find any Korean entry
+        if (!koreanShortEffectEntry) {
+          koreanShortEffectEntry = moveData.flavor_text_entries.find(entry =>
+            entry.language.name === 'ko'
+          );
+        }
+
+        // Fallback to English if no Korean entry is found
+        if (!koreanShortEffectEntry) {
+          koreanShortEffectEntry = moveData.flavor_text_entries.find(entry =>
+            entry.language.name === 'en'
+          );
+        }
 
         const moveInfo = {
           name: moveData.name,
@@ -1157,31 +1172,31 @@ app.get('/api/pokemons/:id/moves', async (req, res) => {
           pp: moveData.pp,
           accuracy: moveData.accuracy,
           level: level,
-          version: detail.version_group.name
+          // Use the found entry's flavor_text, or '설명 없음' if still not found
+          koreanShortEffect: koreanShortEffectEntry ? koreanShortEffectEntry.flavor_text.replace(/\/\/.*$/, '').trim() : '설명 없음'
         };
 
         if (learnMethod === 'level-up' && level > 0) {
-          if (!movesByCategory['level-up'].has(moveInfo.name) || movesByCategory['level-up'].get(moveInfo.name).level > level) {
-            movesByCategory['level-up'].set(moveInfo.name, moveInfo);
-          }
+          movesByVersion[version]['level-up'].push(moveInfo);
         } else if (learnMethod === 'machine') {
-          movesByCategory['machine'].set(moveInfo.name, moveInfo);
+          movesByVersion[version]['machine'].push(moveInfo);
         } else if (learnMethod === 'egg') {
-          movesByCategory['egg'].set(moveInfo.name, moveInfo);
+          movesByVersion[version]['egg'].push(moveInfo);
         } else if (learnMethod === 'tutor') {
-          movesByCategory['tutor'].set(moveInfo.name, moveInfo);
+          movesByVersion[version]['tutor'].push(moveInfo);
         }
       }
     }
 
-    const finalMoves = {
-      'level-up': Array.from(movesByCategory['level-up'].values()).sort((a, b) => a.level - b.level || a.koreanName.localeCompare(b.koreanName)),
-      'machine': Array.from(movesByCategory['machine'].values()).sort((a, b) => a.koreanName.localeCompare(b.koreanName)),
-      'egg': Array.from(movesByCategory['egg'].values()).sort((a, b) => a.koreanName.localeCompare(b.koreanName)),
-      'tutor': Array.from(movesByCategory['tutor'].values()).sort((a, b) => a.koreanName.localeCompare(b.koreanName)),
-    };
+    // Sort moves within each category
+    for (const version in movesByVersion) {
+      movesByVersion[version]['level-up'].sort((a, b) => a.level - b.level || a.koreanName.localeCompare(b.koreanName));
+      movesByVersion[version]['machine'].sort((a, b) => a.koreanName.localeCompare(b.koreanName));
+      movesByVersion[version]['egg'].sort((a, b) => a.koreanName.localeCompare(b.koreanName));
+      movesByVersion[version]['tutor'].sort((a, b) => a.koreanName.localeCompare(b.koreanName));
+    }
 
-    const result = { id, moves: finalMoves };
+    const result = { id, moves: movesByVersion };
     movesCache.set(cacheKey, result);
 
     res.json(result);
