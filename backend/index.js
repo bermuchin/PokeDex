@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const fetch = require('node-fetch');
 const cron = require('node-cron');
 const pLimit = require('p-limit').default;
 const sqlite3 = require('sqlite3').verbose();
