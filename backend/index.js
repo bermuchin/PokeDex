@@ -16,6 +16,7 @@ app.use(express.json());
 // 캐시를 위한 메모리 저장소
 const generationCache = new Map();
 const evolutionCache = new Map();
+const movesCache = new Map();
 
 // 세대별 전체 포켓몬 데이터 캐싱
 const generationPokemonCache = new Map();
@@ -1098,6 +1099,98 @@ app.get('/api/pokemons/:id/evolution', async (req, res) => {
   }
 });
 
+// 포켓몬 기술 정보 API
+app.get('/api/pokemons/:id/moves', async (req, res) => {
+  const { id } = req.params;
+  const cacheKey = `moves_${id}`;
+
+  if (movesCache.has(cacheKey)) {
+    return res.json(movesCache.get(cacheKey));
+  }
+
+  try {
+    const pokemonResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`);
+    if (!pokemonResponse.ok) {
+      return res.status(404).json({ error: 'Pokemon not found' });
+    }
+    const pokemonData = await pokemonResponse.json();
+
+    const moveUrls = new Set(pokemonData.moves.map(m => m.move.url));
+    const moveDetailsCache = new Map();
+    const limit = pLimit(20);
+
+    const moveDetailPromises = Array.from(moveUrls).map(url => limit(async () => {
+      try {
+        const moveResponse = await fetch(url);
+        if (!moveResponse.ok) return;
+        const moveData = await moveResponse.json();
+        moveDetailsCache.set(url, moveData);
+      } catch (e) {
+        console.error(`Failed to fetch move: ${url}`, e);
+      }
+    }));
+    await Promise.all(moveDetailPromises);
+
+    const movesByCategory = {
+      'level-up': new Map(),
+      'machine': new Map(),
+      'egg': new Map(),
+      'tutor': new Map()
+    };
+
+    for (const pokemonMove of pokemonData.moves) {
+      const moveData = moveDetailsCache.get(pokemonMove.move.url);
+      if (!moveData) continue;
+
+      const koreanName = moveData.names.find(n => n.language.name === 'ko')?.name || moveData.name;
+      const moveType = moveData.type.name;
+
+      for (const detail of pokemonMove.version_group_details) {
+        const learnMethod = detail.move_learn_method.name;
+        const level = detail.level_learned_at;
+
+        const moveInfo = {
+          name: moveData.name,
+          koreanName: koreanName,
+          type: moveType,
+          power: moveData.power,
+          pp: moveData.pp,
+          accuracy: moveData.accuracy,
+          level: level,
+          version: detail.version_group.name
+        };
+
+        if (learnMethod === 'level-up' && level > 0) {
+          if (!movesByCategory['level-up'].has(moveInfo.name) || movesByCategory['level-up'].get(moveInfo.name).level > level) {
+            movesByCategory['level-up'].set(moveInfo.name, moveInfo);
+          }
+        } else if (learnMethod === 'machine') {
+          movesByCategory['machine'].set(moveInfo.name, moveInfo);
+        } else if (learnMethod === 'egg') {
+          movesByCategory['egg'].set(moveInfo.name, moveInfo);
+        } else if (learnMethod === 'tutor') {
+          movesByCategory['tutor'].set(moveInfo.name, moveInfo);
+        }
+      }
+    }
+
+    const finalMoves = {
+      'level-up': Array.from(movesByCategory['level-up'].values()).sort((a, b) => a.level - b.level || a.koreanName.localeCompare(b.koreanName)),
+      'machine': Array.from(movesByCategory['machine'].values()).sort((a, b) => a.koreanName.localeCompare(b.koreanName)),
+      'egg': Array.from(movesByCategory['egg'].values()).sort((a, b) => a.koreanName.localeCompare(b.koreanName)),
+      'tutor': Array.from(movesByCategory['tutor'].values()).sort((a, b) => a.koreanName.localeCompare(b.koreanName)),
+    };
+
+    const result = { id, moves: finalMoves };
+    movesCache.set(cacheKey, result);
+
+    res.json(result);
+  } catch (error) {
+    console.error(`Error fetching moves for pokemon ${id}:`, error);
+    res.status(500).json({ error: 'Failed to fetch moves' });
+  }
+});
+
 // 서버 시작 시 DB에서 캐시 불러오고 prefetchAllGenerations 실행
 app.listen(PORT, () => {
   console.log(`🚀 Server listening on port ${PORT}`);
@@ -1125,4 +1218,4 @@ app.listen(PORT, () => {
     console.log(`🔄 Starting initial prefetch...`);
     prefetchAllGenerations();
   })();
-}); 
+});

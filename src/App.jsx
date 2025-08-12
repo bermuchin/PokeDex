@@ -47,6 +47,10 @@ function PokemonDetail() {
   const [evolutionChain, setEvolutionChain] = useState(null);
   const [evolutionLoading, setEvolutionLoading] = useState(false);
   const [evolutionError, setEvolutionError] = useState(null);
+  const [moves, setMoves] = useState(null);
+  const [movesLoading, setMovesLoading] = useState(false);
+  const [movesError, setMovesError] = useState(null);
+  const [activeMoveCategory, setActiveMoveCategory] = useState('level-up');
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -62,6 +66,8 @@ function PokemonDetail() {
         setActiveTab('stats'); // 포켓몬이 변경될 때 탭을 기본으로 리셋
         setEvolutionChain(null); // 진화체인 상태 리셋
         setHabitats(null); // 서식지 상태 리셋
+        setMoves(null); // 기술 상태 리셋
+        setActiveMoveCategory('level-up'); // 기술 카테고리 리셋
         setLoading(false);
       } catch (err) {
         setError('포켓몬 정보를 불러오는데 실패했습니다.');
@@ -110,6 +116,24 @@ function PokemonDetail() {
         });
     }
   }, [activeTab, id, evolutionChain, evolutionLoading]);
+
+  // 기술 탭 클릭 시 fetch
+  useEffect(() => {
+    if (activeTab === 'moves' && !moves && !movesLoading) {
+      setMovesLoading(true);
+      setMovesError(null);
+      fetch(`${API_BASE_URL}/api/pokemons/${id}/moves`)
+        .then(res => res.json())
+        .then(data => {
+          setMoves(data.moves);
+          setMovesLoading(false);
+        })
+        .catch(() => {
+          setMovesError('기술 정보를 불러오지 못했습니다.');
+          setMovesLoading(false);
+        });
+    }
+  }, [activeTab, id, moves, movesLoading]);
 
   // 현재 선택된 폼의 데이터 가져오기
   const getCurrentFormData = () => {
@@ -355,6 +379,12 @@ function PokemonDetail() {
             >
               진화트리
             </button>
+            <button
+              className={`tab-button ${activeTab === 'moves' ? 'active' : ''}`}
+              onClick={() => setActiveTab('moves')}
+            >
+              기술
+            </button>
           </div>
           
           <div className="tab-content">
@@ -507,6 +537,68 @@ function PokemonDetail() {
                   ) : (
                     <div className="no-evolution">진화트리 정보가 없습니다.</div>
                   ))
+                )}
+              </div>
+            )}
+            {activeTab === 'moves' && (
+              <div className="moves-content">
+                {movesLoading && <div>로딩 중...</div>}
+                {movesError && <div className="error">{movesError}</div>}
+                {!movesLoading && !movesError && moves && (
+                  <>
+                    <div className="move-category-buttons">
+                      <button 
+                        className={activeMoveCategory === 'level-up' ? 'active' : ''}
+                        onClick={() => setActiveMoveCategory('level-up')}>
+                        레벨업
+                      </button>
+                      <button 
+                        className={activeMoveCategory === 'machine' ? 'active' : ''}
+                        onClick={() => setActiveMoveCategory('machine')}>
+                        기술머신
+                      </button>
+                      <button 
+                        className={activeMoveCategory === 'egg' ? 'active' : ''}
+                        onClick={() => setActiveMoveCategory('egg')}>
+                        유전기
+                      </button>
+                      <button 
+                        className={activeMoveCategory === 'tutor' ? 'active' : ''}
+                        onClick={() => setActiveMoveCategory('tutor')}>
+                        가르침
+                      </button>
+                    </div>
+                    <div className="moves-list">
+                      {moves[activeMoveCategory] && moves[activeMoveCategory].length > 0 ? (
+                        <table>
+                          <thead>
+                            <tr>
+                              {activeMoveCategory === 'level-up' && <th>레벨</th>}
+                              <th>이름</th>
+                              <th>타입</th>
+                              <th>위력</th>
+                              <th>명중률</th>
+                              <th>PP</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {moves[activeMoveCategory].map((move, index) => (
+                              <tr key={index}>
+                                {activeMoveCategory === 'level-up' && <td>{move.level}</td>}
+                                <td>{move.koreanName}</td>
+                                <td><span className={`type ${move.type}`}>{getKoreanTypeName(move.type)}</span></td>
+                                <td>{move.power || '-'}</td>
+                                <td>{move.accuracy || '-'}</td>
+                                <td>{move.pp || '-'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <div>해당 기술 정보가 없습니다.</div>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
             )}

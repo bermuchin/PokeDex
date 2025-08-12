@@ -479,8 +479,72 @@ h1 {
 }
 
 .nav-btn:disabled {
-  opacity: 0.3;
+  opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Moves Tab Styles */
+.moves-content {
+  padding-top: 1rem;
+}
+
+.move-category-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.move-category-buttons button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.move-category-buttons button:hover {
+  background-color: #e0e0e0;
+}
+
+.move-category-buttons button.active {
+  background-color: #333;
+  color: white;
+  border-color: #333;
+}
+
+.moves-list {
+  overflow-x: auto;
+}
+
+.moves-list table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.moves-list th, .moves-list td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #eee;
+}
+
+.moves-list th {
+  background-color: #f9f9f9;
+  font-weight: 600;
+}
+
+.moves-list tr:last-child td {
+  border-bottom: none;
+}
+
+.moves-list td .type {
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  font-size: 0.9em;
+  color: white;
+  border-radius: 10px;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
 }
 
 .prev-btn {
