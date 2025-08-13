@@ -81,6 +81,15 @@ function PokemonDetail() {
   const [selectedVersion, setSelectedVersion] = useState('');
   const [selectedMove, setSelectedMove] = useState(null);
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchPokemon = async () => {
@@ -606,10 +615,14 @@ function PokemonDetail() {
                               {activeMoveCategory === 'level-up' && <th>레벨</th>}
                               <th>이름</th>
                               <th>타입</th>
-                              <th>분류</th>
-                              <th>위력</th>
-                              <th>명중률</th>
-                              <th>PP</th>
+                              {!isMobile && (
+                                <>
+                                  <th>분류</th>
+                                  <th>위력</th>
+                                  <th>명중률</th>
+                                  <th>PP</th>
+                                </>
+                              )}
                             </tr>
                           </thead>
                           <tbody>
@@ -618,10 +631,14 @@ function PokemonDetail() {
                                 {activeMoveCategory === 'level-up' && <td>{move.level}</td>}
                                 <td>{move.koreanName}</td>
                                 <td><span className={`type ${move.type}`}>{getKoreanTypeName(move.type)}</span></td>
-                                <td>{getKoreanDamageClassName(move.damageClass)}</td>
-                                <td>{move.power || '-'}</td>
-                                <td>{move.accuracy || '-'}</td>
-                                <td>{move.pp || '-'}</td>
+                                {!isMobile && (
+                                  <>
+                                    <td>{getKoreanDamageClassName(move.damageClass)}</td>
+                                    <td>{move.power || '-'}</td>
+                                    <td>{move.accuracy || '-'}</td>
+                                    <td>{move.pp || '-'}</td>
+                                  </>
+                                )}
                               </tr>
                             ))}
                           </tbody>

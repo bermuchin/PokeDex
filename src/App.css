@@ -1462,6 +1462,23 @@ h1 {
     font-size: 0.85rem;
     margin-right: 1px;
   }
+
+  .move-category-buttons {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .move-category-buttons::-webkit-scrollbar {
+    display: none;
+  }
+
+  .move-category-buttons button {
+    flex-shrink: 0;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
   .matchups-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 6px;
