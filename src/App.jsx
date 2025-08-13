@@ -606,6 +606,7 @@ function PokemonDetail() {
                               {activeMoveCategory === 'level-up' && <th>레벨</th>}
                               <th>이름</th>
                               <th>타입</th>
+                              <th>분류</th>
                               <th>위력</th>
                               <th>명중률</th>
                               <th>PP</th>
@@ -617,6 +618,7 @@ function PokemonDetail() {
                                 {activeMoveCategory === 'level-up' && <td>{move.level}</td>}
                                 <td>{move.koreanName}</td>
                                 <td><span className={`type ${move.type}`}>{getKoreanTypeName(move.type)}</span></td>
+                                <td>{getKoreanDamageClassName(move.damageClass)}</td>
                                 <td>{move.power || '-'}</td>
                                 <td>{move.accuracy || '-'}</td>
                                 <td>{move.pp || '-'}</td>
@@ -1449,6 +1451,15 @@ function getKoreanAbilityName(ability) {
   return abilityNames[ability] || ability;
 }
 
+function getKoreanDamageClassName(damageClass) {
+  const names = {
+    physical: '물리기',
+    special: '특수기',
+    status: '변화기',
+  };
+  return names[damageClass] || damageClass;
+}
+
 function MoveDetailModal({ move, onClose }) {
   // 모달 외부 클릭 시 닫기
   useEffect(() => {
@@ -1470,14 +1481,14 @@ function MoveDetailModal({ move, onClose }) {
         <h2 className={`type-${move.type}`}>{move.koreanName}</h2>
         <div className="move-modal-details">
           <p><strong>타입:</strong> <span className={`type ${move.type}`}>{getKoreanTypeName(move.type)}</span></p>
-          <p><strong>분류:</strong> {move.damage_class}</p>
+          <p><strong>분류:</strong> {getKoreanDamageClassName(move.damageClass)}</p>
           <p><strong>위력:</strong> {move.power || '-'}</p>
           <p><strong>명중률:</strong> {move.accuracy || '-'}</p>
           <p><strong>PP:</strong> {move.pp || '-'}</p>
         </div>
         <div className="move-modal-description">
           <h3>기술 설명</h3>
-          <p>{move.koreanShortEffect || '설명 없음'}</p> // Display koreanShortEffect, with fallback
+          <p>{move.koreanShortEffect || '설명 없음'}</p>
         </div>
       </div>
     </div>

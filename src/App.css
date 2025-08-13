@@ -1448,12 +1448,18 @@ h1 {
     font-size: 1rem;
   }
   .tab-buttons {
-    flex-wrap: wrap;
-    gap: 2px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
+    scrollbar-width: none; /* For Firefox */
+  }
+  .tab-buttons::-webkit-scrollbar {
+    display: none; /* For Chrome, Safari, and Opera */
   }
   .tab-button {
-    padding: 10px 16px;
-    font-size: 0.9rem;
+    flex-shrink: 0; /* Prevent buttons from shrinking */
+    padding: 10px 12px;
+    font-size: 0.85rem;
     margin-right: 1px;
   }
   .matchups-grid {
@@ -1598,11 +1604,18 @@ h1 {
     font-size: 0.9rem;
   }
   .tab-buttons {
-    gap: 1px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tab-buttons::-webkit-scrollbar {
+    display: none;
   }
   .tab-button {
-    padding: 8px 12px;
-    font-size: 0.8rem;
+    flex-shrink: 0;
+    padding: 8px 10px;
+    font-size: 0.75rem;
     margin-right: 1px;
   }
   .matchups-content h4 {

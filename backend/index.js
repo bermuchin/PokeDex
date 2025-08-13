@@ -31,11 +31,25 @@ db.run(`CREATE TABLE IF NOT EXISTS pokemons_cache (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )`);
 
+db.run(`CREATE TABLE IF NOT EXISTS moves_cache (
+  pokemon_id INTEGER PRIMARY KEY,
+  data TEXT,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
+
 function saveCacheToDB(generation, data) {
   db.run(
     `INSERT OR REPLACE INTO pokemons_cache (generation, data, updated_at) VALUES (?, ?, datetime('now'))`,
     [generation, JSON.stringify(data)],
     (err) => { if (err) console.error('DB 캐시 저장 오류:', err); }
+  );
+}
+
+function saveMovesCacheToDB(pokemonId, data) {
+  db.run(
+    `INSERT OR REPLACE INTO moves_cache (pokemon_id, data, updated_at) VALUES (?, ?, datetime('now'))`,
+    [pokemonId, JSON.stringify(data)],
+    (err) => { if (err) console.error('DB moves 캐시 저장 오류:', err); }
   );
 }
 
@@ -47,6 +61,23 @@ function loadCacheFromDB(generation) {
       (err, row) => {
         if (err) {
           console.error('DB 캐시 불러오기 오류:', err);
+          resolve(null);
+        } else {
+          resolve(row ? JSON.parse(row.data) : null);
+        }
+      }
+    );
+  });
+}
+
+function loadMovesCacheFromDB(pokemonId) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      `SELECT data FROM moves_cache WHERE pokemon_id = ?`,
+      [pokemonId],
+      (err, row) => {
+        if (err) {
+          console.error('DB moves 캐시 불러오기 오류:', err);
           resolve(null);
         } else {
           resolve(row ? JSON.parse(row.data) : null);
@@ -1096,11 +1127,20 @@ app.get('/api/pokemons/:id/moves', async (req, res) => {
   const { id } = req.params;
   const cacheKey = `moves_${id}`;
 
+  // 1. Check in-memory cache
   if (movesCache.has(cacheKey)) {
     return res.json(movesCache.get(cacheKey));
   }
 
   try {
+    // 2. Check DB cache
+    const dbCache = await loadMovesCacheFromDB(id);
+    if (dbCache) {
+      movesCache.set(cacheKey, dbCache); // Update in-memory cache
+      return res.json(dbCache);
+    }
+
+    // 3. If no cache, fetch from API
     const pokemonResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`);
     if (!pokemonResponse.ok) {
       return res.status(404).json({ error: 'Pokemon not found' });
@@ -1116,6 +1156,20 @@ app.get('/api/pokemons/:id/moves', async (req, res) => {
         const moveResponse = await fetch(url);
         if (!moveResponse.ok) return;
         const moveData = await moveResponse.json();
+        
+        // Fetch damage class
+        if (moveData.damage_class && moveData.damage_class.url) {
+          try {
+            const damageClassResponse = await fetch(moveData.damage_class.url);
+            if (damageClassResponse.ok) {
+              const damageClassData = await damageClassResponse.json();
+              moveData.damage_class_name = damageClassData.name;
+            }
+          } catch (e) {
+            console.error(`Failed to fetch damage class for move: ${url}`, e);
+          }
+        }
+        
         moveDetailsCache.set(url, moveData);
       } catch (e) {
         console.error(`Failed to fetch move: ${url}`, e);
@@ -1168,6 +1222,7 @@ app.get('/api/pokemons/:id/moves', async (req, res) => {
           name: moveData.name,
           koreanName: koreanName,
           type: moveType,
+          damageClass: moveData.damage_class_name || 'unknown',
           power: moveData.power,
           pp: moveData.pp,
           accuracy: moveData.accuracy,
@@ -1198,6 +1253,7 @@ app.get('/api/pokemons/:id/moves', async (req, res) => {
 
     const result = { id, moves: movesByVersion };
     movesCache.set(cacheKey, result);
+    saveMovesCacheToDB(id, result);
 
     res.json(result);
   } catch (error) {
