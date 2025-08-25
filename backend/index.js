@@ -25,18 +25,6 @@ const generationPokemonCache = new Map();
 let isPrefetching = false;
 let prefetchCompleted = false;
 
-db.run(`CREATE TABLE IF NOT EXISTS pokemons_cache (
-  generation TEXT PRIMARY KEY,
-  data TEXT,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)`);
-
-db.run(`CREATE TABLE IF NOT EXISTS moves_cache (
-  pokemon_id INTEGER PRIMARY KEY,
-  data TEXT,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)`);
-
 function saveCacheToDB(generation, data) {
   db.run(
     `INSERT OR REPLACE INTO pokemons_cache (generation, data, updated_at) VALUES (?, ?, datetime('now'))`,
@@ -385,7 +373,7 @@ function getKoreanFormName(formName, pokemonId = null) {
     'step': '스텝폼',
     'baile': '바일폼',
     'pom-pom': '폼폼폼',
-    'pa\'u': '파우폼',
+    'pau': '파우폼',
     'sensu': '센스폼',
     'midnight': '한밤중의 모습',
     'dawn': '새벽의 날개',
@@ -1262,35 +1250,56 @@ app.get('/api/pokemons/:id/moves', async (req, res) => {
   }
 });
 
-// 서버 시작 시 DB에서 캐시 불러오고 prefetchAllGenerations 실행
+// 서버 시작 시 DB 테이블 생성, 캐시 불러오기, prefetchAllGenerations 실행
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server listening on port ${PORT}`);
-  
-  // cron 스케줄러 상태 로그
-  const now = new Date();
-  const nowKST = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const nextCronTime = new Date(now);
-  nextCronTime.setUTCHours(20, 0, 0, 0);
-  if (now >= nextCronTime) {
-    nextCronTime.setDate(nextCronTime.getDate() + 1);
-  }
-  
-  console.log(`📅 Cron Scheduler Status:`);
-  console.log(`   - Current UTC: ${now.toISOString()}`);
-  console.log(`   - Current KST: ${nowKST.toISOString()}`);
-  console.log(`   - Next cron execution: ${nextCronTime.toISOString()}`);
-  console.log(`   - Cron expression: 0 0 5 * * * (KST 05:00)`);
-  console.log(`   - Timezone: Asia/Seoul`);
-  
-  // 비동기 초기화는 따로 실행
-  (async () => {
-    console.log(`🔄 DB에서 캐시 불러오는 중...`);
-    await loadAllCacheFromDB();
-    console.log(`✅ DB 캐시 로드 완료. 5초 후 초기 데이터 프리페치를 시작합니다.`);
-    // Render와 같은 배포 환경에서 시작 타임아웃을 방지하기 위해 약간의 지연 후 프리페치를 시작합니다.
-    setTimeout(() => {
-      console.log(`🔄 Starting initial prefetch...`);
-      prefetchAllGenerations();
-    }, 5000); // 5초 지연
-  })();
+
+  db.serialize(() => {
+    db.run(`CREATE TABLE IF NOT EXISTS pokemons_cache (
+      generation TEXT PRIMARY KEY,
+      data TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS moves_cache (
+      pokemon_id INTEGER PRIMARY KEY,
+      data TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`, (err) => {
+      if (err) {
+        console.error("DB table creation error:", err);
+        return;
+      }
+      
+      console.log("✅ DB tables created or already exist.");
+
+      // cron 스케줄러 상태 로그
+      const now = new Date();
+      const nowKST = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+      const nextCronTime = new Date(now);
+      nextCronTime.setUTCHours(20, 0, 0, 0);
+      if (now >= nextCronTime) {
+        nextCronTime.setDate(nextCronTime.getDate() + 1);
+      }
+      
+      console.log(`📅 Cron Scheduler Status:`);
+      console.log(`   - Current UTC: ${now.toISOString()}`);
+      console.log(`   - Current KST: ${nowKST.toISOString()}`);
+      console.log(`   - Next cron execution: ${nextCronTime.toISOString()}`);
+      console.log(`   - Cron expression: 0 0 5 * * * (KST 05:00)`);
+      console.log(`   - Timezone: Asia/Seoul`);
+      
+      // 비동기 초기화는 따로 실행
+      (async () => {
+        console.log(`🔄 DB에서 캐시 불러오는 중...`);
+        await loadAllCacheFromDB();
+        console.log(`✅ DB 캐시 로드 완료. 5초 후 초기 데이터 프리페치를 시작합니다.`);
+        // Render와 같은 배포 환경에서 시작 타임아웃을 방지하기 위해 약간의 지연 후 프리페치를 시작합니다.
+        setTimeout(() => {
+          console.log(`🔄 Starting initial prefetch...`);
+          prefetchAllGenerations();
+        }, 5000); // 5초 지연
+      })();
+    });
+  });
 });
