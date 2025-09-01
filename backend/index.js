@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const cron = require('node-cron');
-const pLimit = require('p-limit')
+const pLimit = require('p-limit').default; //로컬에서는 default 지우기/render에서는 default
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./cache.db');
 
