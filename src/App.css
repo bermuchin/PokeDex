@@ -99,6 +99,11 @@ h1 {
 
 /* 검색 기능 스타일 */
 .search-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5); /* 스크롤 시 배경 */
+  padding: 15px 0;
   margin-bottom: 30px;
   text-align: center;
   display: flex;

@@ -24,4 +24,3 @@ dist-ssr
 *.sw?
 .vercel
 
-backend/cache.db
