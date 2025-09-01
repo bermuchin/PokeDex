@@ -187,10 +187,9 @@ h1 {
 .type-buttons {
   width: 90%;
   margin: 0 auto;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
   gap: 8px;
-  justify-content: center;
 }
 .type-button {
   padding: 10px 16px;
