@@ -1513,6 +1513,9 @@ h1 {
 }
 
 @media (max-width: 480px) {
+  .search-container {
+    width: 100%;
+  }
   .pokemon-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
