@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom'
 import './App.css'
+import RefactoredPokemonList from './components/PokemonList'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
 
@@ -110,7 +111,7 @@ function PokemonDetail() {
         setAvailableVersions([]); // 버전 목록 리셋
         setSelectedVersion(''); // 선택된 버전 리셋
         setLoading(false);
-      } catch (err) {
+      } catch {
         setError('포켓몬 정보를 불러오는데 실패했습니다.');
         setLoading(false);
       }
@@ -761,7 +762,7 @@ function PokemonList() {
       setPokemonCache(prev => new Map(prev).set(generation, unique));
       setPokemons(unique);
       setLoading(false);
-    } catch (err) {
+    } catch {
       setError('포켓몬 리스트를 불러오는데 실패했습니다.');
       setLoading(false);
     }
@@ -994,7 +995,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<PokemonList />} />
+        <Route path="/" element={<RefactoredPokemonList />} />
         <Route path="/pokemon/:id" element={<PokemonDetail />} />
       </Routes>
     </Router>

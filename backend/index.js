@@ -14,16 +14,11 @@ app.use(cors());
 app.use(express.json());
 
 // 캐시를 위한 메모리 저장소
-const generationCache = new Map();
 const evolutionCache = new Map();
 const movesCache = new Map();
 
 // 세대별 전체 포켓몬 데이터 캐싱
 const generationPokemonCache = new Map();
-
-// 프리페치 상태 추적을 위한 플래그 추가
-let isPrefetching = false;
-let prefetchCompleted = false;
 
 function saveCacheToDB(generation, data) {
   db.run(
@@ -42,7 +37,7 @@ function saveMovesCacheToDB(pokemonId, data) {
 }
 
 function loadCacheFromDB(generation) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     db.get(
       `SELECT data FROM pokemons_cache WHERE generation = ?`,
       [generation],
@@ -59,7 +54,7 @@ function loadCacheFromDB(generation) {
 }
 
 function loadMovesCacheFromDB(pokemonId) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     db.get(
       `SELECT data FROM moves_cache WHERE pokemon_id = ?`,
       [pokemonId],
@@ -76,7 +71,7 @@ function loadMovesCacheFromDB(pokemonId) {
 }
 
 async function loadAllCacheFromDB() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     db.all(`SELECT generation, data FROM pokemons_cache`, [], (err, rows) => {
       if (err) {
         console.error('DB 전체 캐시 불러오기 오류:', err);
@@ -98,19 +93,6 @@ function setCache(cache, key, value) {
 }
 
 // 다음 새벽 5시(KST)까지 남은 ms 계산 함수 추가
-function getMsUntilNext5amKST() {
-  const now = new Date();
-  // KST = UTC+9
-  const nowKST = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const next5amKST = new Date(nowKST);
-  next5amKST.setHours(5, 0, 0, 0);
-  if (nowKST >= next5amKST) {
-    next5amKST.setDate(next5amKST.getDate() + 1);
-  }
-  // 다시 UTC 기준 ms로 변환
-  return next5amKST - nowKST;
-}
-
 // 폼 정보 fetch/파싱 유틸 함수 분리
 async function getPokemonForms(pokemonData, speciesData) {
   const forms = [];
@@ -265,7 +247,7 @@ async function fetchPokemonDetailWithRetry(id, retries = 2) {
         image: pokemonData.sprites.other['official-artwork'].front_default || pokemonData.sprites.front_default,
         types: pokemonData.types.map(type => type.type.name)
       };
-    } catch (e) {
+    } catch {
       if (i === retries) {
         console.error(`[프리페치] 포켓몬 ${id} fetch 실패 (최종)`);
         return null;
@@ -291,7 +273,6 @@ async function prefetchAllGenerations() {
         return limit(() => fetchPokemonDetailWithRetry(id, 2));
       }));
       const filteredDetails = pokemonDetails.filter(Boolean);
-      const msUntil5am = getMsUntilNext5amKST();
       setCache(generationPokemonCache, cacheKey, filteredDetails);
       allPokemons = allPokemons.concat(filteredDetails);
       // 진단 로그 추가
@@ -303,7 +284,6 @@ async function prefetchAllGenerations() {
   }
   // 전국도감(all)은 1~9세대 캐시를 합쳐서 중복 없이 생성
   const uniqueAllPokemons = Array.from(new Map(allPokemons.map(p => [p.id, p])).values());
-  const msUntil5am = getMsUntilNext5amKST();
   setCache(generationPokemonCache, 'generation_all', uniqueAllPokemons);
   console.log(`[프리페치] 전국도감(all) 상세 목록 캐시 완료 (${uniqueAllPokemons.length}마리)`);
   console.log('[프리페치] 모든 세대 상세 목록 캐시 완료!');
@@ -380,7 +360,6 @@ function getKoreanFormName(formName, pokemonId = null) {
     'ultra': '울트라폼',
     'eternal': '이터널폼',
     'unbound': '언바운드폼',
-    'complete': '컴플리트폼',
     '10': '10%폼',
     '50': '50%폼',
     '100': '퍼펙트폼',
@@ -516,7 +495,6 @@ app.get('/api/pokemons', async (req, res) => {
         pokemons = pokemonDetails.filter(Boolean);
         
         // 캐시에 저장
-        const msUntil5am = getMsUntilNext5amKST();
         setCache(generationPokemonCache, cacheKey, pokemons);
         console.log(`[API] ${generation}세대 데이터 캐시 완료 (${pokemons.length}마리)`);
       } catch (error) {
@@ -525,13 +503,15 @@ app.get('/api/pokemons', async (req, res) => {
       }
     }
     
-    const offsetInt = parseInt(offset);
-    const limitInt = parseInt(limit);
-    // /api/pokemons에서 slice 방어적 처리
-    const paginated = pokemons.slice(offsetInt, Math.min(offsetInt + limitInt, pokemons.length));
+    const offsetInt = Math.max(0, Number.parseInt(offset, 10) || 0);
+    const limitInt = Math.max(1, Number.parseInt(limit, 10) || 50);
+    const orderedPokemons = Array.from(
+      new Map(pokemons.map(pokemon => [pokemon.id, pokemon])).values()
+    ).sort((a, b) => a.id - b.id);
+    const paginated = orderedPokemons.slice(offsetInt, offsetInt + limitInt);
     res.json({
       pokemons: paginated,
-      total: pokemons.length,
+      total: orderedPokemons.length,
       limit: limitInt,
       offset: offsetInt
     });
@@ -960,7 +940,6 @@ function getAbilityDescription(abilityName) {
     'sky-incarnate': '하늘의 화신이다.',
     'ability-all': '모든 특성을 가진다.',
     'cacophony': '소리 기술을 받지 않는다.',
-    'air-lock': '날씨 효과를 무시한다.'
   };
   return descriptions[abilityName] || '특성 설명이 없습니다.';
 }

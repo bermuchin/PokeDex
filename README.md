@@ -7,6 +7,7 @@ React + Node.js로 만든 포켓몬 도감 애플리케이션입니다.
 - **세대별 포켓몬 조회**: 1세대부터 9세대까지, 전국도감 지원
 - **실시간 검색**: 포켓몬 이름으로 검색 (한글/영문)
 - **타입 필터링**: 18가지 타입별 필터링
+- **무한 스크롤**: 30마리 단위 페이지 로딩과 중복·순서 보장
 - **상세 정보**: 포켓몬의 능력치, 키, 몸무게 등 상세 정보
 - **백엔드 API**: Node.js + Express로 구현된 효율적인 API 서버
 - **캐싱 시스템**: 메모리 캐시로 성능 최적화
@@ -17,6 +18,10 @@ React + Node.js로 만든 포켓몬 도감 애플리케이션입니다.
 - React 19
 - Vite
 - CSS3
+
+목록 화면은 [`src/components/`](./src/components/)의 `PokemonList`, `PokemonCard`,
+`SearchBar`, `GenerationButtons`로 분리되어 있으며, 페이지 조회·병합 로직은
+[`src/hooks/usePokemonList.js`](./src/hooks/usePokemonList.js)가 담당합니다.
 
 ### Backend
 - Node.js
@@ -75,7 +80,7 @@ VITE_API_URL=http://localhost:3002
 ## 🔌 API 엔드포인트
 
 ### 포켓몬 관련
-- `GET /api/pokemons?generation=1&limit=50&offset=0` - 세대별 포켓몬 목록
+- `GET /api/pokemons?generation=1&limit=30&offset=0` - 세대별 포켓몬 목록
 - `GET /api/pokemons/ids?ids=1,2,3,4` - 특정 ID들의 포켓몬 정보
 - `GET /api/pokemons/:id` - 단일 포켓몬 정보
 
