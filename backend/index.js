@@ -5,6 +5,21 @@ const cron = require('node-cron');
 const pLimit = require('p-limit').default; //로컬에서는 default 지우기/render에서는 default
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./cache.db');
+const pokemonSummaryTableReady = new Promise((resolve) => {
+  db.run(
+    `CREATE TABLE IF NOT EXISTS pokemon_summary_cache (
+      pokemon_id INTEGER PRIMARY KEY,
+      data TEXT NOT NULL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`,
+    (error) => {
+      if (error) {
+        console.error('DB 포켓몬 요약 캐시 테이블 생성 오류:', error);
+      }
+      resolve(error || null);
+    },
+  );
+});
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -19,6 +34,10 @@ const movesCache = new Map();
 
 // 세대별 전체 포켓몬 데이터 캐싱
 const generationPokemonCache = new Map();
+const generationSpeciesCache = new Map();
+const generationSpeciesRequests = new Map();
+const pokemonSummaryCache = new Map();
+const pokemonSummaryRequests = new Map();
 
 function saveCacheToDB(generation, data) {
   db.run(
@@ -51,6 +70,81 @@ function loadCacheFromDB(generation) {
       }
     );
   });
+}
+
+async function loadPokemonSummaryFromDB(pokemonId) {
+  const tableError = await pokemonSummaryTableReady;
+  if (tableError) throw tableError;
+  return new Promise((resolve, reject) => {
+    db.get(
+      `SELECT data FROM pokemon_summary_cache WHERE pokemon_id = ?`,
+      [pokemonId],
+      (error, row) => {
+        if (error) {
+          reject(error);
+        } else {
+          try {
+            resolve(row ? JSON.parse(row.data) : null);
+          } catch (parseError) {
+            reject(parseError);
+          }
+        }
+      },
+    );
+  });
+}
+
+async function savePokemonSummaryToDB(pokemonId, data) {
+  const tableError = await pokemonSummaryTableReady;
+  if (tableError) throw tableError;
+  return new Promise((resolve, reject) => {
+    db.run(
+      `INSERT OR REPLACE INTO pokemon_summary_cache (pokemon_id, data, updated_at)
+       VALUES (?, ?, datetime('now'))`,
+      [pokemonId, JSON.stringify(data)],
+      (error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      },
+    );
+  });
+}
+
+async function getPokemonSummary(pokemonId) {
+  if (pokemonSummaryCache.has(pokemonId)) {
+    return pokemonSummaryCache.get(pokemonId);
+  }
+
+  if (pokemonSummaryRequests.has(pokemonId)) {
+    return pokemonSummaryRequests.get(pokemonId);
+  }
+
+  const request = (async () => {
+    const databaseCache = await loadPokemonSummaryFromDB(pokemonId);
+    if (databaseCache) {
+      pokemonSummaryCache.set(pokemonId, databaseCache);
+      return databaseCache;
+    }
+
+    const pokemon = await fetchPokemonDetailWithRetry(pokemonId, 2);
+    if (!pokemon) {
+      throw new Error(`Failed to fetch summary for pokemon ${pokemonId}`);
+    }
+
+    await savePokemonSummaryToDB(pokemonId, pokemon);
+    pokemonSummaryCache.set(pokemonId, pokemon);
+    return pokemon;
+  })();
+
+  pokemonSummaryRequests.set(pokemonId, request);
+  try {
+    return await request;
+  } finally {
+    pokemonSummaryRequests.delete(pokemonId);
+  }
 }
 
 function loadMovesCacheFromDB(pokemonId) {
@@ -212,20 +306,48 @@ async function fetchGenerationSpecies(generation) {
     let species = [];
     if (generation === 'all') {
       const response = await fetch('https://pokeapi.co/api/v2/pokemon-species?limit=1025');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch national species: ${response.status}`);
+      }
       const data = await response.json();
       species = data.results;
     } else {
       const response = await fetch(`https://pokeapi.co/api/v2/generation/${generation}/`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch generation ${generation}: ${response.status}`);
+      }
       const data = await response.json();
-      species = data.pokemon_species.sort((a, b) => {
-        const getId = url => parseInt(url.split('/').filter(Boolean).pop());
-        return getId(a.url) - getId(b.url);
-      });
+      species = data.pokemon_species;
     }
-    return species;
+    return species.sort((a, b) => {
+      const getId = (url) => Number.parseInt(url.split('/').filter(Boolean).pop(), 10);
+      return getId(a.url) - getId(b.url);
+    });
   } catch (error) {
     console.error(`Error fetching generation ${generation}:`, error);
     throw error;
+  }
+}
+
+async function getGenerationSpecies(generation) {
+  if (generationSpeciesCache.has(generation)) {
+    return generationSpeciesCache.get(generation);
+  }
+
+  if (generationSpeciesRequests.has(generation)) {
+    return generationSpeciesRequests.get(generation);
+  }
+
+  const request = fetchGenerationSpecies(generation).then((species) => {
+    generationSpeciesCache.set(generation, species);
+    return species;
+  });
+  generationSpeciesRequests.set(generation, request);
+
+  try {
+    return await request;
+  } finally {
+    generationSpeciesRequests.delete(generation);
   }
 }
 
@@ -237,6 +359,9 @@ async function fetchPokemonDetailWithRetry(id, retries = 2) {
         fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`),
         fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}/`)
       ]);
+      if (!pokemonResponse.ok || !speciesResponse.ok) {
+        throw new Error(`PokeAPI returned an error for pokemon ${id}`);
+      }
       const pokemonData = await pokemonResponse.json();
       const speciesData = await speciesResponse.json();
       const koreanName = speciesData.names.find(name => name.language.name === 'ko')?.name || pokemonData.name;
@@ -462,7 +587,7 @@ app.get('/', (req, res) => {
 
 // API 엔드포인트들
 
-// 1. 세대별 포켓몬 목록 (상세 정보 포함) - 고성능 버전
+// 1. 세대별 목록을 페이지 단위로 조회
 app.get('/api/pokemons', async (req, res) => {
   try {
     const { generation, limit = 50, offset = 0 } = req.query;
@@ -482,23 +607,28 @@ app.get('/api/pokemons', async (req, res) => {
     }
     
     if (!pokemons) {
-      // 캐시가 없으면 프리페치 대신 기존 방식으로 데이터 가져오기
-      console.log(`[API] 캐시 미스: ${generation}세대, 기존 방식으로 데이터 가져오기`);
-      
+      const offsetInt = Math.max(0, Number.parseInt(offset, 10) || 0);
+      const limitInt = Math.max(1, Number.parseInt(limit, 10) || 50);
+
       try {
-        const species = await fetchGenerationSpecies(generation);
-        const limit = pLimit(20);
-        const pokemonDetails = await Promise.all(species.map(s => {
-          const id = s.url.split('/').filter(Boolean).pop();
-          return limit(() => fetchPokemonDetailWithRetry(id, 2));
+        const species = await getGenerationSpecies(generation);
+        const requestedSpecies = species.slice(offsetInt, offsetInt + limitInt);
+        const limitConcurrency = pLimit(20);
+        const pokemonDetails = await Promise.all(requestedSpecies.map((entry) => {
+          const id = Number.parseInt(entry.url.split('/').filter(Boolean).pop(), 10);
+          return limitConcurrency(() => getPokemonSummary(id));
         }));
-        pokemons = pokemonDetails.filter(Boolean);
-        
-        // 캐시에 저장
-        setCache(generationPokemonCache, cacheKey, pokemons);
-        console.log(`[API] ${generation}세대 데이터 캐시 완료 (${pokemons.length}마리)`);
+
+        res.json({
+          pokemons: pokemonDetails,
+          total: species.length,
+          limit: limitInt,
+          offset: offsetInt,
+        });
+        console.log(`[API] ${generation}세대 ${offsetInt}~${offsetInt + pokemonDetails.length} 요약 정보 반환`);
+        return;
       } catch (error) {
-        console.error(`[API] ${generation}세대 데이터 가져오기 실패:`, error);
+        console.error(`[API] ${generation}세대 페이지 데이터 가져오기 실패:`, error);
         return res.status(500).json({ error: 'Failed to fetch pokemons' });
       }
     }
@@ -1272,12 +1402,7 @@ app.listen(PORT, '0.0.0.0', () => {
       (async () => {
         console.log(`🔄 DB에서 캐시 불러오는 중...`);
         await loadAllCacheFromDB();
-        console.log(`✅ DB 캐시 로드 완료. 5초 후 초기 데이터 프리페치를 시작합니다.`);
-        // Render와 같은 배포 환경에서 시작 타임아웃을 방지하기 위해 약간의 지연 후 프리페치를 시작합니다.
-        setTimeout(() => {
-          console.log(`🔄 Starting initial prefetch...`);
-          prefetchAllGenerations();
-        }, 5000); // 5초 지연
+        console.log(`✅ DB 캐시 로드 완료. 전체 도감 초기 프리페치는 생략합니다.`);
       })();
     });
   });
